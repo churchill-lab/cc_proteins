@@ -1,0 +1,256 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}{{ config.MAIN_TITLE|safe }}{% endblock %}
+{% block meta_description %}{% endblock %}
+{% block head %}
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/CoreUI-v1.0.6/style.css', _external=True) }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/CoreUI-v1.0.6/simple-line-icons-2.4.1.css', _external=True) }}">
+
+    <link rel="stylesheet"
+          href="//use.fontawesome.com/releases/v5.0.2/css/all.css">
+
+    <link rel="stylesheet"
+          href="//cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/bootstrap-hardskilled-extend-select-1.1.4/css/select.css', _external=True) }}">
+
+    <link rel="stylesheet"
+          href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/4.4.5/css/fileinput.min.css"/>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='styles/main.css', _external=True) }}">
+
+    <style>
+
+    </style>
+
+{% endblock %}
+
+{% block body %}
+{% include 'page/nav.html' %}
+
+<body>
+    <div class="container-fluid">
+        <main class="col-12" role="main">
+
+            <div class="row">
+                <div class="col">
+                    <h2>Help</h2>
+                    The Search Form allows you to search fro either genes or protein stings
+                    of interest.
+                </div>
+            </div>
+
+            <div class="row row-spacer"></div>
+
+            <div class="row">
+                <div class="col">
+                    <h3>Gene Search</h3>
+                    To search for a particular gene, please enter an Ensembl gene identifier or
+                    gene symbol in the box below "Enter a term to search for a gene of interest."
+                    and click the "Gene Search" button.
+                </div>
+            </div>
+
+            <div class="row row-spacer"></div>
+
+            <div class="row">
+                <div class="col">
+                    <h3>Protein Search</h3>
+                    To search for a particular protein string or strings, please enter each search
+                    term on a separate line in the box below "Enter protein search strings.". Click
+                    the "Protein Search" button to begin the search.
+                    <ul>
+                        <li>The "*" character will match any number of characters between the surrounding characters</li>
+                        <li>The "?" character will match a single character between the surrounding characters</li>
+                        <li>For an exact match, check the "Exact match" box</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="row row-spacer"></div>
+
+            <div class="row">
+                <div class="col-8">
+                    <div class="row">
+                        <div class="col-12">
+                            <span class="font-weight-bold">Amino Acid Sequence Code Table</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3">
+                            <table class="table table-responsive table-sm condensed">
+                                <thead>
+                                    <tr><th scope="col">Code</th><th scope="col">Amino Acid</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><th scope="row">A</th><td>alanine</td></tr>
+                                    <tr><th scope="row">B</th><td>aspartate or asparagine</td></tr>
+                                    <tr><th scope="row">C</th><td>cysteine</td></tr>
+                                    <tr><th scope="row">D</th><td>aspartate</td></tr>
+                                    <tr><th scope="row">E</th><td>glutamate</td></tr>
+                                    <tr><th scope="row">F</th><td>phenylalanine</td></tr>
+                                    <tr><th scope="row">G</th><td>glycine</td></tr>
+                                    <tr><th scope="row">H</th><td>histidine</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-3">
+                            <table class="table table-responsive table-sm condensed">
+                                <thead>
+                                    <tr><th scope="col">Code</th><th scope="col">Amino Acid</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><th scope="row">I</th><td>isoleucine</td></tr>
+                                    <tr><th scope="row">K</th><td>lysine</td></tr>
+                                    <tr><th scope="row">L</th><td>leucine</td></tr>
+                                    <tr><th scope="row">M</th><td>methionine</td></tr>
+                                    <tr><th scope="row">N</th><td>asparagine</td></tr>
+                                    <tr><th scope="row">O</th><td>pyrrolysine</td></tr>
+                                    <tr><th scope="row">P</th><td>proline</td></tr>
+                                    <tr><th scope="row">Q</th><td>glutamine</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-3">
+                            <table class="table table-responsive table-sm condensed">
+                                <thead>
+                                    <tr><th scope="col">Code</th><th scope="col">Amino Acid</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><th scope="row">R</th><td>arginine</td></tr>
+                                    <tr><th scope="row">S</th><td>serine</td></tr>
+                                    <tr><th scope="row">T</th><td>threonine</td></tr>
+                                    <tr><th scope="row">U</th><td>selenocysteine</td></tr>
+                                    <tr><th scope="row">V</th><td>valine</td></tr>
+                                    <tr><th scope="row">W</th><td>tryptophan</td></tr>
+                                    <tr><th scope="row">Y</th><td>tyrosine</td></tr>
+                                    <tr><th scope="row">Z</th><td>glutamic acid or glutamine</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <div class="row">
+                        <div class="col">
+                            <span class="font-weight-bold">Strains</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <table class="table table-responsive table-sm condensed">
+                                <thead>
+                                    <tr>
+                                        <!--
+                                        <th class="text-center" scope="row"></th>
+                                        //-->
+                                        <th class="text-center" scope="row">Code</th>
+                                        <th scope="row">Strain</th></tr>
+                                </thead>
+                                <tbody>
+                                    {% for strain in config.STRAINS %}
+                                    <tr>
+                                        <!--
+                                        <td class="text-center">
+                                            <div class="form-check">
+                                                <label class="form-check-label">
+                                                <input class="form-check-input  position-static" type="checkbox" checked value="">
+                                                </label>
+                                            </div>
+                                        </td>
+                                        //-->
+                                        <td class="text-center" ><span class="border badge" style="background-color:{{strain.color}}">{{strain.key}}</span></td>
+                                        <td>{{strain.name}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row row-spacer"></div>
+
+            <div class="row">
+                <div class="col">
+                    <h3>Search Results</h3>
+                    Regardless of searching for a gene or a protein sequence,
+                    the results will be displayed in a table format. Each gene symbol
+                    can be <em>clicked</em> to generate an alignment view located in the
+                    "Alignment Viewer" section.
+                </div>
+            </div>
+
+            <div class="row row-spacer"></div>
+
+            <div class="row">
+                <div class="col">
+                    <h3>Alignment Viewer</h3>
+                    All the proteins for a gene will be displayed in this sections.  There are
+                    several options which you can than choose to use.
+                    <ul>
+                        <li>Sort - You can sort the sequences in the viewer by "label" or by "sequence"</li>
+                        <li>Search - you can search for a substring on characters</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="row row-spacer"></div>
+
+            {% include 'page/contact.html' %}
+
+        </main>
+    </div>
+
+</body>
+{% endblock %}
+
+{% block javascript %}
+
+    <script src="//code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"
+            integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+            crossorigin="anonymous"></script>
+
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"
+            integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+            crossorigin="anonymous"></script>
+
+    <!-- ENSIMPL API -->
+    <script src="//churchill-lab.jax.org/ensimpl/api/js/ensimpl.js"></script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/4.4.5/js/fileinput.min.js"></script>
+
+
+    <!-- D3 //-->
+    <script src="//d3js.org/d3.v3.min.js"></script>
+    <script src="//d3js.org/d3-queue.v3.min.js"></script>
+    <script src="//d3js.org/d3-request.v1.min.js"></script>
+
+    <!-- Extra //-->
+    <script src="{{ url_for('static', filename='vendor/CoreUI-v1.0.6/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/dynatables-0.3.1/jquery.dynatable.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap-hardskilled-extend-select-1.1.4/js/select.min.js') }}"></script>
+
+    <script>
+
+    $().ready(function () {
+
+    });
+
+
+
+
+    </script>
+
+{% endblock %}

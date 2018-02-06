@@ -1,0 +1,131 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}{{ config.MAIN_TITLE|safe }}{% endblock %}
+{% block meta_description %}{% endblock %}
+{% block head %}
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/CoreUI-v1.0.6/style.css', _external=True) }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/CoreUI-v1.0.6/simple-line-icons-2.4.1.css', _external=True) }}">
+
+    <link rel="stylesheet"
+          href="//use.fontawesome.com/releases/v5.0.2/css/all.css">
+
+    <link rel="stylesheet"
+          href="//cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/bootstrap-hardskilled-extend-select-1.1.4/css/select.css', _external=True) }}">
+
+    <link rel="stylesheet"
+          href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/4.4.5/css/fileinput.min.css"/>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='styles/main.css', _external=True) }}">
+
+    <style>
+
+    </style>
+
+{% endblock %}
+
+{% block body %}
+
+<body>
+
+    {% include 'page/nav.html' %}
+
+    <div class="container-fluid">
+        <main class="col-12" role="main">
+
+            <div class="row">
+                <div class="col">
+                    <h4>Data Resource</h4>
+                    <ul class="list-unstyled pl-4">
+                        <li>
+                            <a href="http://ftp.ensembl.org/pub/release-90/fasta/mus_musculus_129s1svimj/pep/Mus_musculus_129s1svimj.129S1_SvImJ_v1.pep.all.fa.gz">129S1/SvImJ</a> <span class="font-weight-light">[GZipped Fasta]</span>
+                        </li>
+                        <li>
+                            <a href="http://ftp.ensembl.org/pub/release-90/fasta/mus_musculus_aj/pep/Mus_musculus_aj.A_J_v1.pep.all.fa.gz">A/J</a> <span class="font-weight-light">[GZipped Fasta]</span>
+                        </li>
+                        <li>
+                            <a href="http://ftp.ensembl.org/pub/release-90/fasta/mus_musculus_129s1svimj/pep/Mus_musculus_129s1svimj.129S1_SvImJ_v1.pep.all.fa.gz">CL57BL6</a> <span class="font-weight-light">[GZipped Fasta]</span>
+                        </li>
+                        <li>
+                            <a href="http://ftp.ensembl.org/pub/release-90/fasta/mus_musculus_casteij/pep/Mus_musculus_casteij.CAST_EiJ_v1.pep.all.fa.gz">CAST/EiJ</a> <span class="font-weight-light">[GZipped Fasta]</span>
+                        </li>
+                        <li>
+                            <a href="http://ftp.ensembl.org/pub/release-90/fasta/mus_musculus_nodshiltj/pep/Mus_musculus_nodshiltj.NOD_ShiLtJ_v1.pep.all.fa.gz">NOD/ShiLtJ</a> <span class="font-weight-light">[GZipped Fasta]</span>
+                        </li>
+                        <li>
+                            <a href="http://ftp.ensembl.org/pub/release-90/fasta/mus_musculus_nzohlltj/pep/Mus_musculus_nzohlltj.NZO_HlLtJ_v1.pep.all.fa.gz">NZO/HlLtJ</a> <span class="font-weight-light">[GZipped Fasta]</span>
+                        </li>
+                        <li>
+                            <a href="http://ftp.ensembl.org/pub/release-90/fasta/mus_musculus_pwkphj/pep/Mus_musculus_pwkphj.PWK_PhJ_v1.pep.all.fa.gz">PWK/PhJ</a> <span class="font-weight-light">[GZipped Fasta]</span>
+                        </li>
+                        <li>
+                            <a href="http://ftp.ensembl.org/pub/release-90/fasta/mus_musculus_wsbeij/pep/Mus_musculus_wsbeij.WSB_EiJ_v1.pep.all.fa.gz">WSB/EiJ</a> <span class="font-weight-light">[GZipped Fasta]</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <h4>References</h4>
+                    <ol>
+                        <li>
+                            <a target="_ref" href="https://www.nature.com/articles/ng1104-1133">The Collaborative Cross, a community resource for the genetic analysis of complex traits.</a><br/>
+                            Churchill GA, Airey DC, Allayee H, Angel JM, Attie AD, Beatty J, Beavis WD, Belknap JK, Bennett B, Berrettini W, Bleich A, Bogue M, Broman KW, Buck KJ, Buckler E, Burmeister M, Chesler EJ, Cheverud JM, Clapcote S, Cook MN, Cox RD, Crabbe JC, Crusio WE, Darvasi A, Deschepper CF, Doerge RW, Farber CR, Forejt J, Gaile D, Garlow SJ, Geiger H, Gershenfeld H, Gordon T, Gu J, Gu W, de Haan G, Hayes NL, Heller C, Himmelbauer H, Hitzemann R, Hunter K, Hsu HC, Iraqi FA, Ivandic B, Jacob HJ, Jansen RC, Jepsen KJ, Johnson DK, Johnson TE, Kempermann G, Kendziorski C, Kotb M, Kooy RF, Llamas B, Lammert F, Lassalle JM, Lowenstein PR, Lu L, Lusis A, Manly KF, Marcucio R, Matthews D, Medrano JF, Miller DR, Mittleman G, Mock BA, Mogil JS, Montagutelli X, Morahan G, Morris DG, Mott R, Nadeau JH, Nagase H, Nowakowski RS, O'Hara BF, Osadchuk AV, Page GP, Paigen B, Paigen K, Palmer AA, Pan HJ, Peltonen-Palotie L, Peirce J, Pomp D, Pravenec M, Prows DR, Qi Z, Reeves RH, Roder J, Rosen GD, Schadt EE, Schalkwyk LC, Seltzer Z, Shimomura K, Shou S, Sillanpää MJ, Siracusa LD, Snoeck HW, Spearow JL, Svenson K, Tarantino LM, Threadgill D, Toth LA, Valdar W, de Villena FP, Warden C, Whatley S, Williams RW, Wiltshire T, Yi N, Zhang D, Zhang M, Zou F.<br/>
+                            Nature genetics. 2004; 36(11):1133-7. PMID: 15514660<br/>
+                        </li>
+                        <li>
+                            <a target="_ref" href="http://www.genetics.org/content/206/2/537.article-info">Genomes of the Mouse Collaborative Cross.</a><br/>
+                            Srivastava A, Morgan AP, Najarian ML, Sarsani VK, Sigmon JS, Shorter JR, Kashfeen A, McMullan RC, Williams LH, Giusti-Rodríguez P, Ferris MT, Sullivan P, Hock P, Miller DR, Bell TA, McMillan L, Churchill GA, de Villena FP.<br/>
+                            Genetics. 2017; 206(2):537-556. PMID: 28592495 PMCID: PMC5499171<br/>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+
+
+            {% include 'page/contact.html' %}
+
+        </main>
+    </div>
+
+</body>
+{% endblock %}
+
+{% block javascript %}
+
+    <script src="//code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"
+            integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+            crossorigin="anonymous"></script>
+
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"
+            integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+            crossorigin="anonymous"></script>
+
+    <!-- ENSIMPL API -->
+    <script src="//churchill-lab.jax.org/ensimpl/api/js/ensimpl.js"></script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/4.4.5/js/fileinput.min.js"></script>
+
+
+    <!-- D3 //-->
+    <script src="//d3js.org/d3.v3.min.js"></script>
+    <script src="//d3js.org/d3-queue.v3.min.js"></script>
+    <script src="//d3js.org/d3-request.v1.min.js"></script>
+
+    <!-- Extra //-->
+    <script src="{{ url_for('static', filename='vendor/CoreUI-v1.0.6/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/dynatables-0.3.1/jquery.dynatable.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap-hardskilled-extend-select-1.1.4/js/select.min.js') }}"></script>
+
+{% endblock %}

@@ -1,0 +1,740 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}{{ config.MAIN_TITLE|safe }}{% endblock %}
+{% block meta_description %}{% endblock %}
+{% block head %}
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/CoreUI-v1.0.6/style.css', _external=True) }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/CoreUI-v1.0.6/simple-line-icons-2.4.1.css', _external=True) }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/dynatables-0.3.1/jquery.dynatable.css', _external=True) }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/bootstrap-switch-3.3.4/css/bootstrap3/bootstrap-switch.min.css', _external=True) }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/bootstrap-hardskilled-extend-select-1.1.4/css/select.min.css', _external=True) }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/icheck-1.x/skins/square/blue.css', _external=True) }}">
+
+    <link rel="stylesheet"
+          href="//use.fontawesome.com/releases/v5.0.2/css/all.css">
+
+    <link rel="stylesheet"
+          href="//cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+
+    <link rel="stylesheet"
+          href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/4.4.5/css/fileinput.min.css"/>
+
+    <link rel="stylesheet"
+          href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.33.0/codemirror.css"/>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='styles/main.css', _external=True) }}">
+
+    <style>
+        .CodeMirror {
+            border: 1px solid #ddd;
+            font-family: "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        .results-wrapper {
+            overflow-y: scroll;
+            height: 200px;
+        }
+
+        .tab-content {
+            border: none
+        }
+
+    </style>
+
+{% endblock %}
+
+{% block body %}
+
+<body>
+<div class="inner">
+
+{% include 'page/nav.html' %}
+
+    <div class="container-fluid">
+        <main class="col" role="main">
+
+            <div class="row">
+                <div class="col">
+                    <h1 class="display-4">CC Protein Viewer</h1>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <p class="lead">
+                        This application ...
+                    </p>
+                </div>
+            </div>
+
+            <div class="row row-spacer"></div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="card">
+                        <div class="card-header">
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="navGeneSearch" data-toggle="tab" href="#tabGeneSearch"><i class="fas fa-chart-line"></i> Gene Search</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="navProteinSearch" data-toggle="tab" href="#tabProteinSearch"><i class="far fa-calendar-alt fa-rotate-180"></i> Protein Search</a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="tab-content">
+                                <div role="tabpanel" class="tab-pane active" id="tabGeneSearch">
+
+                                    <div class="row">
+                                        <div class="col">
+                                            <strong>Enter a term to search for a gene of interest.</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="row row-spacer"></div>
+
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="input-group">
+                                                <input type="text" id="txtGeneSearch" name="txtGeneSearch" class="form-control" placeholder="Akt2, Kit, etc...">
+                                                <span class="input-group-btn">
+                                                    <button id="btnGeneSearch" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row row-spacer"></div>
+
+                                    <div class="row">
+                                        <div class="col">
+                                            <span id="geneSearchResultsStatus"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="row row-spacer"></div>
+
+                                    <div class="row">
+                                        <div class="col results-wrapper">
+                                            <div id="geneSearchResults">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row row-spacer"></div>
+
+                                    <div class="row">
+                                        <div class="col">
+                                            <strong>Select the strains you want to search for.</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="row row-spacer"></div>
+
+                                    <div class="row" id="strainMasterCheckbox">
+                                        <div class="col">
+                                            <label id="strain_ALL_label" class="form-check-label">
+                                                <input type="checkbox" id="strain_ALL" class="form-check-input" checked> <span style="white-space: nowrap;"> Select All</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="row row-spacer"></div>
+
+                                    <div class="row" id="strainCheckboxes">
+                                        <div class="col">
+                                            <div class="row">
+                                        {% for strain in config.STRAINS %}
+                                            {% if loop.index0 == 4 %}
+                                            </div>
+                                            <div class="row">
+                                            {% endif %}
+                                                <div class="col-md">
+                                                    <label id="strain_{{ strain.id }}_label" class="form-check-label">
+                                                        <input type="checkbox" id="strain_{{ strain.id }}" class="form-check-input" checked> <span style="white-space: nowrap;">{{ strain.name }}</span>
+                                                    </label>
+                                                </div>
+                                        {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="tabProteinSearch">
+
+                                    <textarea id="textarea-proteins" name="textarea-proteins"></textarea>
+
+                                    <div class="row row-spacer"></div>
+
+                                    <div class="row">
+                                        <div class="col-2">
+                                            <div class="form-check">
+                                                <label id="ee" class="form-check-label">
+                                                    <input type="checkbox" id="exactMatch" class="form-check-input">
+                                                    Exact match
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-10 font-weight-light">
+                                            Note: '<strong>*</strong>' is the wild card character, and '<strong>?</strong>' matches a single character
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--
+                        <div class="card-footer">
+                            <div class="row">
+                                <div class="col">
+                                    <button class="btn btn-sm btn-primary" id="btnGo" type="button">Search</button>
+                                </div>
+                            </div>
+                        </div>
+                        //-->
+                    </div>
+                </div>
+            </div>
+
+            <div class="row row-spacer"></div>
+
+            <div class="row">
+                <div class="col-8">
+                    <div class="row">
+                        <div class="col-12">
+                            <span class="font-weight-bold">Amino Acid Sequence Code Table</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3">
+                            <table class="table table-responsive table-sm condensed">
+                                <thead>
+                                    <tr><th scope="col">Code</th><th scope="col">Amino Acid</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><th scope="row">A</th><td>alanine</td></tr>
+                                    <tr><th scope="row">B</th><td>aspartate or asparagine</td></tr>
+                                    <tr><th scope="row">C</th><td>cysteine</td></tr>
+                                    <tr><th scope="row">D</th><td>aspartate</td></tr>
+                                    <tr><th scope="row">E</th><td>glutamate</td></tr>
+                                    <tr><th scope="row">F</th><td>phenylalanine</td></tr>
+                                    <tr><th scope="row">G</th><td>glycine</td></tr>
+                                    <tr><th scope="row">H</th><td>histidine</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-3">
+                            <table class="table table-responsive table-sm condensed">
+                                <thead>
+                                    <tr><th scope="col">Code</th><th scope="col">Amino Acid</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><th scope="row">I</th><td>isoleucine</td></tr>
+                                    <tr><th scope="row">K</th><td>lysine</td></tr>
+                                    <tr><th scope="row">L</th><td>leucine</td></tr>
+                                    <tr><th scope="row">M</th><td>methionine</td></tr>
+                                    <tr><th scope="row">N</th><td>asparagine</td></tr>
+                                    <tr><th scope="row">O</th><td>pyrrolysine</td></tr>
+                                    <tr><th scope="row">P</th><td>proline</td></tr>
+                                    <tr><th scope="row">Q</th><td>glutamine</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-3">
+                            <table class="table table-responsive table-sm condensed">
+                                <thead>
+                                    <tr><th scope="col">Code</th><th scope="col">Amino Acid</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><th scope="row">R</th><td>arginine</td></tr>
+                                    <tr><th scope="row">S</th><td>serine</td></tr>
+                                    <tr><th scope="row">T</th><td>threonine</td></tr>
+                                    <tr><th scope="row">U</th><td>selenocysteine</td></tr>
+                                    <tr><th scope="row">V</th><td>valine</td></tr>
+                                    <tr><th scope="row">W</th><td>tryptophan</td></tr>
+                                    <tr><th scope="row">Y</th><td>tyrosine</td></tr>
+                                    <tr><th scope="row">Z</th><td>glutamic acid or glutamine</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <div class="row">
+                        <div class="col">
+                            <span class="font-weight-bold">Strains</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <table class="table table-responsive table-sm condensed">
+                                <thead>
+                                    <tr>
+                                        <!--
+                                        <th class="text-center" scope="row"></th>
+                                        //-->
+                                        <th class="text-center" scope="row">Code</th>
+                                        <th scope="row">Strain</th></tr>
+                                </thead>
+                                <tbody>
+                                    {% for strain in config.STRAINS %}
+                                    <tr>
+                                        <!--
+                                        <td class="text-center">
+                                            <div class="form-check">
+                                                <label class="form-check-label">
+                                                <input class="form-check-input  position-static" type="checkbox" checked value="">
+                                                </label>
+                                            </div>
+                                        </td>
+                                        //-->
+                                        <td class="text-center" ><span class="border badge" style="background-color:{{strain.color}}">{{strain.key}}</span></td>
+                                        <td>{{strain.name}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="row">
+                <div class="col-12">
+                    <div id="searchProgressDiv"></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <table class="table table-striped table-small condensed">
+                        <thead>
+                        <tr>
+                            <th scope="col">Sequence</th>
+                            <th scope="col">Gene</th>
+                            <th scope="col">Symbol</th>
+                            <th scope="col">Protein</th>
+                            {% for strain in config.STRAINS %}
+                                <th class="text-center"><span class="border badge" style="background-color:{{strain.color}}">{{strain.key}}</span></th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                        <tbody id="tblBody">
+                        </tbody>
+                    </table>
+                </div>
+
+
+        </main>
+    </div>
+
+
+
+
+</div>
+
+    <!-- Main Footer
+    <nav class="navbar fixed-bottom navbar-dark bg-dark">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item">
+            <span class="text-muted">
+                <strong>Created by <a href="http://churchill-lab.jax.org">The Churchill Lab</a>.</strong>
+            </span>
+          </li>
+        </ul>
+    </nav>
+    //-->
+
+</body>
+{% endblock %}
+
+{% block javascript %}
+
+    <script src="//code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"
+            integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+            crossorigin="anonymous"></script>
+
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"
+            integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+            crossorigin="anonymous"></script>
+
+    <!-- ENSIMPL API -->
+    <script src="//churchill-lab.jax.org/ensimpl/api/js/ensimpl.js"></script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/4.4.5/js/fileinput.min.js"></script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.33.0/codemirror.js"></script>
+
+    <!-- D3 //-->
+    <script src="//d3js.org/d3.v3.min.js"></script>
+    <script src="//d3js.org/d3-queue.v3.min.js"></script>
+    <script src="//d3js.org/d3-request.v1.min.js"></script>
+
+    <!-- Extra //-->
+    <script src="{{ url_for('static', filename='vendor/CoreUI-v1.0.6/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/dynatables-0.3.1/jquery.dynatable.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap-hardskilled-extend-select-1.1.4/js/select.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap-switch-3.3.4/js/bootstrap-switch.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap-switch-3.3.4/js/bootstrap-switch.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/jquery-check-all-0.5.0/jquery-check-all.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/icheck-1.x/icheck.js') }}"></script>
+
+    <script>
+
+    // Extended disable function
+    jQuery.fn.extend({
+        disable: function(state) {
+            return this.each(function() {
+                let $this = $(this);
+                if($this.is('input, button, textarea, select'))
+                    this.disabled = state;
+                else
+                    $this.toggleClass('disabled', state);
+            });
+        }
+    });
+
+    var globals = {};
+
+    function setStatus(done) {
+        $('#textarea-to').disable(!done);
+        $('#convert-to').disable(!done);
+
+        $('#input-id').parent().disable(!done);
+        $('#btnConvert').disable(!done);
+        $('#btnDownload').disable(!done);
+
+        $('.select-extended-element .btn').disable(!done);
+
+        if (done) {
+            globals.inputFrom.setOption('readOnly', false);
+            $('#btnConvert').html('Convert <i class="fas fa-exchange-alt">');
+        } else {
+            globals.inputFrom.setOption('readOnly', 'nocursor');
+            $('#btnConvert').html('Convert <i class="fa fa-cog fa-spin fa-fw"></i>');
+            $('#conversionStatus').html('Performing conversion...');
+            $('#conversionErrors').html('');
+        }
+    }
+
+    function downloadProteins() {
+        let searchVals = $("#searchTerm").val().trim().split('\n');
+        let exactMatch = $("#exactMatch").is(":checked");
+
+        for (let s in searchVals) {
+            if (!exactMatch) {
+                searchVals[s] = "*" + searchVals[s].trim() + "*"
+            }
+        }
+
+     // send ajax POST request to start background job
+        console.log(searchVals);
+        $.ajax({
+            type: 'POST',
+            url: `{{ url_for('api.search', _external=True) }}`,
+            contentType: 'application/json',
+            data: JSON.stringify({'sequences': searchVals}),
+            success: function(data, status, request) {
+                let status_url = request.getResponseHeader('Location');
+                console.log('status_url=', status_url);
+            },
+            error: function() {
+                alert('Unexpected error');
+            }
+        });
+    }
+
+
+    function displayProteins(result) {
+        //console.log('displaying', result);
+        let t = $('#tblBody');
+        $.each(result, function(seq_idx, seq_elem) {
+            //console.log(seq_elem);
+
+            if (seq_elem.length == 0) {
+                let r = '<tr><td colspan="12">' + seq_idx + '</td></tr>';
+                t.append(r);
+            } else {
+
+                $.each(seq_elem, function (gene_idx, gene_elem) {
+                    //console.log(gene_elem);
+
+                    $.each(gene_elem.proteins, function (protein_idx, protein_elem) {
+                        //console.log(protein_elem)
+
+                        let r = '<tr><td>' + seq_idx + '</td>';
+                        r += ('<td>' + gene_elem.ensembl_id + '</td>');
+                        r += ('<td>' + gene_elem.symbol + '</td>');
+                        r += ('<td>' + protein_idx + '</td>');
+                        let count = 0;
+
+                        {% for strain in config.STRAINS %}
+                        if (protein_elem['{{strain.key}}'] > 0) {
+                            {% if strain.key != 'B' %}
+                            count++;
+                            {% endif %}
+                            r += '<td class="text-center" ><span class="border badge" style="background-color:{{strain.color}}">{{strain.key}}</span></td>';
+                        } else {
+                            r += '<td class="text-center"></td>';
+                        }
+                        {% endfor %}
+
+                        r += '</tr>';
+
+                        if (count > 0) {
+                            t.append(r);
+                        }
+
+
+                    });
+
+                });
+            }
+        });
+
+
+
+        $("#searchProgressDiv").removeClass("visible");
+        $("#searchProgressDiv").addClass("invisible");
+        $("#searchProgress").css("width", "0%");
+        $("#btnGo").attr("running", "0");
+        $("#btnGo").button().removeClass("disabled");
+
+    }
+
+
+
+    function findProteins() {
+        let searchVal = $("#searchTerm").val().trim().toUpperCase();
+
+        let running = $("#btnGo").attr("running");
+        $("#searchProgressDiv").removeClass("invisible");
+        $("#searchProgressDiv").addClass("visible");
+        $("#searchProgress").css("width", "0%");
+
+        if (running === "1") {
+            console.log('preventing click...');
+            return;
+        }
+
+        $("#btnGo").attr("running", "1");
+        $("#btnGo").button().addClass("disabled");
+
+        $("#tblBody").html('');
+
+        if (searchVal.length === 0) {
+            return;
+        }
+
+        downloadProteins();
+    }
+
+    function setStatus(done) {
+
+        $('#btnGeneSearch').disable(!done);
+        $('#txtGeneSearch').disable(!done);
+
+        if (done) {
+            $('#btnGeneSearch').html('<i class="fas fa-search">');
+        } else {
+            $('#btnGeneSearch').html('<i class="fa fa-cog fa-spin fa-fw"></i>');
+        }
+    }
+
+    /**
+     * Populate the search results.
+     */
+    function geneSearchCallback() {
+        if (globals.ensimpl.response.result.matches === null) {
+            setStatus(true);
+            $('#geneSearchResultsStatus').html('No results found');
+            return;
+        }
+
+        let tbl = `<table id="geneSearchResultsTable" class="table table-striped table-hover table-sm table-bordered">
+                <thead>
+                <tr>
+                    <th class="" scope="col">ID</th>
+                    <th class="" scope="col">Symbol</th>
+                    <th class="d-none d-md-table-cell" scope="col">Position</th>
+                    <th class="d-none d-xl-table-cell" scope="col">Match Reason</th>
+                    <th class="d-none d-xl-table-cell" scope="col">Description</th>
+                </tr>
+                </thead>
+                <tbody id="geneTableBody"></tbody>
+                </table>`;
+        $('#geneSearchResults').html(tbl);
+
+        let response = globals.ensimpl.response;
+        $.each(response.result.matches, function(idx, elem) {
+            $("#geneTableBody").append(
+                `<tr>
+                    <td><a href="">${elem.ensembl_gene_id}</a></td>
+                    <td>${elem.symbol}</td>
+                    <td class="d-none d-md-table-cell">${elem.chromosome}:${elem.position_start}-${elem.position_end}</td>
+                    <td class="d-none d-xl-table-cell">${elem.match_reason}</td>
+                    <td class="d-none d-xl-table-cell">${elem.name}</td>
+                </tr>`);
+        });
+
+        if (response.result.num_results === 1) {
+            $('#geneSearchResultsStatus').html(response.result.matches.length.toLocaleString() + ' result');
+        } else if (response.result.matches.num_matches < 100) {
+            $('#geneSearchResultsStatus').html(response.result.matches.length.toLocaleString() + ' results');
+        } else {
+            $('#geneSearchResultsStatus').html('Showing first ' + response.result.matches.length.toLocaleString() + ' of ' + response.result.num_results.toLocaleString() + ' results');
+        }
+
+        setStatus(true);
+    }
+
+    function findGene(searchVal) {
+        let button = $('#btnGeneSearch');
+        let term = $('#txtGeneSearch');
+
+        if (searchVal.length === 0) {
+            term.focus();
+            return;
+        }
+
+        let options = {
+            species: globals.speciesID,
+            version: globals.ensemblVersion,
+            limit: 100
+        };
+
+        setStatus(false);
+        globals.ensimpl.search(searchVal, options, geneSearchCallback);
+    }
+
+
+    function getStrainsChecked() {
+        let strains = [];
+        $.each($('#strainCheckboxes input:checked'), function(idx, elem) {
+            let strain_id = elem.id.substr(7);
+            strains.push(strain_id);
+        });
+
+        return strains;
+    }
+
+    function allStrainsChecked() {
+        let all = true;
+        $.each($('#strainCheckboxes input[type=checkbox]'), function (idx, elem) {
+            all = all && $(elem).prop('checked');
+        });
+        return all;
+    }
+
+    $().ready(function () {
+        globals.searchTerms = CodeMirror.fromTextArea($('#textarea-proteins')[0], {
+            lineNumbers: true
+        });
+
+        globals.speciesID = 'Mm';
+        globals.ensimpl = new ensimpl();
+
+        globals.ensimpl.versions(function(data) {
+            let versions = {};
+            let species = {};
+
+            $.each(data, function(idx, elem) {
+                versions[elem['version']] = +elem['version'];
+                species[elem['species']] = elem['species'];
+            });
+
+            let vals = Object.values(versions);
+            vals.sort().reverse();
+
+            // get the first object, which will be the latest
+            globals.ensemblVersion = vals[0];
+            console.log('Latest Version: ', globals.ensemblVersion);
+
+            /*
+            $.each(vals, function(key, val) {
+                $("#selectVersion").append('<option value="' + val + '">' + val + '</option>')
+            });
+
+            $.each(species, function(key, val) {
+                $("#selectSpecies").append('<option value="' + key + '">' + val + '</option>')
+            });
+            */
+        });
+
+        $('input').iCheck({
+            checkboxClass: 'icheckbox_square-blue',
+            radioClass: 'iradio_square-blue',
+            increaseArea: '20%' // optional
+        });
+
+        $('#strainCheckboxes .iCheck-helper, #strainCheckboxes label').on('click', function(evt) {
+            let checked = allStrainsChecked();
+            console.log(checked);
+            if (checked) {
+                $('#strain_ALL_label input').iCheck('check');
+            } else {
+                $('#strain_ALL_label input').iCheck('uncheck');
+            }
+        });
+
+        $('#strainMasterCheckbox .iCheck-helper, #strainMasterCheckbox label').on('click', function(evt) {
+            if ($($('#strainMasterCheckbox input[type=checkbox]')[0]).prop('checked')) {
+                $('#strainCheckboxes input').iCheck('check');
+
+            } else {
+                $('#strainCheckboxes input').iCheck('uncheck');
+
+            }
+
+        });
+
+        $('#txtGeneSearch').keypress(function(evt) {
+            let code = evt.which ? evt.which : evt.keyCode;
+            if (code === 13) {
+                $(this).blur();
+                $('#btnGeneSearch').focus().click();
+            }
+        });
+
+        $('#btnGeneSearch').button().on('click', function(evt) {
+            evt.preventDefault();
+            let term = $('#txtGeneSearch');
+            findGene(term.val().trim().toUpperCase());
+            return false;
+        });
+
+        $('#btnGo').button().on('click', function (evt) {
+            evt.preventDefault();
+            console.log('findProteins');
+            findProteins();
+            return false;
+        });
+    });
+    //-->
+
+    </script>
+
+{% endblock %}

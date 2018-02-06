@@ -1,0 +1,71 @@
+{
+    "configurations": {
+        "90": {
+            "ensembl_release": 90,
+            "ensembl_release_date":	"Aug-2017",
+            "db_server": "ensembldb.ensembl.org",
+            "db_port": 3306,
+            "db_user": "anonymous",
+            "db_password": "",
+            "compara_db": "ensembl_compara_90",
+            "strains": [
+                {
+                    "strain_id": "mus_musculus_129s1svimj",
+                    "reference": "129S1_SvImJ_v1",
+                    "name": "129S1/SvImJ",
+                    "db": "mus_musculus_129s1svimj_core_90_1",
+                    "fasta_file": "http://ftp.ensembl.org/pub/release-90/fasta/mus_musculus_129s1svimj/pep/Mus_musculus_129s1svimj.129S1_SvImJ_v1.pep.all.fa.gz"
+                },
+                {
+                    "strain_id": "mus_musculus_aj",
+                    "reference": "A_J_v1",
+                    "name": "A/J",
+                    "db": "mus_musculus_aj_core_90_1",
+                    "fasta_file": "http://ftp.ensembl.org/pub/release-90/fasta/mus_musculus_aj/pep/Mus_musculus_aj.A_J_v1.pep.all.fa.gz"
+                },
+                {
+                    "strain_id": "mus_musculus_casteij",
+                    "reference": "CAST_EiJ_v1",
+                    "name": "CAST/EiJ",
+                    "db": "mus_musculus_casteij_core_90_1",
+                    "fasta_file": "http://ftp.ensembl.org/pub/release-90/fasta/mus_musculus_casteij/pep/Mus_musculus_casteij.CAST_EiJ_v1.pep.all.fa.gz"
+                },
+                {
+                    "strain_id": "mus_musculus_nodshiltj",
+                    "reference": "NOD_ShiLtJ_v1",
+                    "name": "NOD/ShiLtJ",
+                    "db": "mus_musculus_nodshiltj_core_90_1",
+                    "fasta_file": "http://ftp.ensembl.org/pub/release-90/fasta/mus_musculus_nodshiltj/pep/Mus_musculus_nodshiltj.NOD_ShiLtJ_v1.pep.all.fa.gz"
+                },
+                {
+                    "strain_id": "mus_musculus_nzohlltj",
+                    "reference": "NZO_HlLtJ_v1",
+                    "name": "NZO/HlLtJ",
+                    "db": "mus_musculus_nzohlltj_core_90_1",
+                    "fasta_file": "http://ftp.ensembl.org/pub/release-90/fasta/mus_musculus_nzohlltj/pep/Mus_musculus_nzohlltj.NZO_HlLtJ_v1.pep.all.fa.gz"
+                },
+                {
+                    "strain_id": "mus_musculus_pwkphj",
+                    "reference": "PWK_PhJ_v1",
+                    "name": "PWK/PhJ",
+                    "db": "mus_musculus_pwkphj_core_90_1",
+                    "fasta_file": "http://ftp.ensembl.org/pub/release-90/fasta/mus_musculus_pwkphj/pep/Mus_musculus_pwkphj.PWK_PhJ_v1.pep.all.fa.gz"
+                },
+                {
+                    "strain_id": "mus_musculus_wsbeij",
+                    "reference": "WSB_EiJ_v1",
+                    "name": "WSB/EiJ",
+                    "db": "mus_musculus_wsbeij_core_90_1",
+                    "fasta_file": "http://ftp.ensembl.org/pub/release-90/fasta/mus_musculus_wsbeij/pep/Mus_musculus_wsbeij.WSB_EiJ_v1.pep.all.fa.gz"
+                }
+            ],
+            "reference": {
+                "strain_id": "mus_musculus",
+                "reference": "GRCm38.p5",
+                "name": "CL57BL6",
+                "db": "mus_musculus_core_90_38",
+                "fasta_file": "ftp://ftp.ensembl.org/pub/release-90/fasta/mus_musculus/pep/Mus_musculus.GRCm38.pep.all.fa.gz"
+            }
+        }
+    }
+}

@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+  website:
+    build: .
+    command: >
+      gunicorn -w ${GUNICORN_WORKERS} -b 0.0.0.0:9000 --reload "cc_proteins.app:create_app()"
+    env_file:
+      - '.env'
+    volumes:
+      - '.:/app/cc_proteins'
+      - ${CC_PROTEINS_DATA}:/app/cc_proteins/data
+      - ${CC_PROTEINS_TMP_DIR}:/app/cc_proteins/tmp
+    ports:
+      - '${EXTERNAL_PORT}:9000'
+
+  redis:
+    image: 'redis:3.0-alpine'
+    command: redis-server
+    volumes:
+      - 'redis:/var/lib/redis/data'
+    ports:
+      - '6379:6379'
+
+  celery:
+    build: .
+    command: celery worker -l info -A cc_proteins.modules.api.tasks
+    env_file:
+      - '.env'
+    volumes:
+      - '.:/app/cc_proteins'
+      - ${CC_PROTEINS_DATA}:/app/cc_proteins/data
+      - ${CC_PROTEINS_TMP_DIR}:/app/cc_proteins/tmp
+
+  flower:
+    build: .
+    command: flower -A cc_proteins.modules.api.tasks --port=5555
+    env_file:
+      - '.env'
+    volumes:
+      - '.:/app/cc_proteins'
+      - ${CC_PROTEINS_DATA}:/app/cc_proteins/data
+    ports:
+      - '5555:5555'
+
+
+volumes:
+  redis:

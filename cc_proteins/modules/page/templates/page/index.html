@@ -1,0 +1,999 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}{{ config.MAIN_TITLE|safe }}{% endblock %}
+{% block meta_description %}{% endblock %}
+{% block head %}
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/CoreUI-v1.0.6/style.css', _external=True) }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/CoreUI-v1.0.6/simple-line-icons-2.4.1.css', _external=True) }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/dynatables-0.3.1/jquery.dynatable.css', _external=True) }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/bootstrap-switch-3.3.4/css/bootstrap3/bootstrap-switch.min.css', _external=True) }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/bootstrap-hardskilled-extend-select-1.1.4/css/select.min.css', _external=True) }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/icheck-1.x/skins/square/blue.css', _external=True) }}">
+
+    <link rel="stylesheet"
+          href="//use.fontawesome.com/releases/v5.0.2/css/all.css">
+
+    <link rel="stylesheet"
+          href="//cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+
+    <link rel="stylesheet"
+          href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/4.4.5/css/fileinput.min.css"/>
+
+    <link rel="stylesheet"
+          href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.33.0/codemirror.css"/>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='styles/main.css', _external=True) }}">
+
+    <script src="{{ url_for('static', filename='vendor/msa/dist/msa.js') }}"></script>
+
+    <style>
+        .CodeMirror {
+            border: 1px solid #ddd;
+            font-family: "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            height: 100px;
+        }
+
+        .results-wrapper {
+            overflow-y: scroll;
+            height: 200px;
+        }
+
+        .biojs_msa_headers {
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        .biojs_msa_labels {
+            white-space: nowrap;
+            text-align: right;
+            padding-right: 10px;
+        }
+
+        .condensed {
+            font-size:0.8rem
+        }
+
+    </style>
+
+{% endblock %}
+
+{% block body %}
+
+<body>
+<div class="inner">
+
+{% include 'page/nav.html' %}
+
+    <div class="container-fluid">
+        <main class="col" role="main">
+
+            <div class="row">
+                <div class="col">
+                    <h1 class="display-4">CC Protein Viewer</h1>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <p class="lead">
+                        This application allows gene and protein sequence searches to extract protein information from the CC Founder strains: A/J, C57BL/6J, 129S1Sv/ImJ, NOD/ShiLtJ, NZO/H1LtJ, CAST/EiJ, PWK/PhJ, and WSB/EiJ.
+                    </p>
+                </div>
+            </div>
+
+            <div class="row row-spacer"></div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-search"></i> Search</a>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col">
+                                    <strong>Enter a term to search for a gene of interest.</strong>
+                                </div>
+                            </div>
+
+                            <div class="row row-spacer"></div>
+
+                            <div class="row">
+                                <div class="col">
+                                    <div class="input-group">
+                                        <input type="text" id="txtGeneSearch" class="form-control"
+                                               placeholder="Akt2, Kit, etc..." aria-label="Akt2, Kit, etc...">
+                                        <span class="input-group-btn">
+                                            <button class="btn btn-primary" id="btnGeneSearch" type="button"><i class="fas fa-search"></i></button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row row-spacer"></div>
+
+                            <div class="row">
+                                <div class="col text-center">
+                                    <strong>OR</strong>
+                                </div>
+                            </div>
+
+                            <div class="row row-spacer"></div>
+
+                            <div class="row">
+                                <div class="col">
+                                    <strong>Enter protein search strings.</strong>
+                                </div>
+                            </div>
+
+
+                            <div class="row">
+                                <div class="col font-weight-light">
+                                    Note: '<strong>*</strong>' is the wild card character, and '<strong>?</strong>' matches a single character
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col">
+                                    <textarea id="textarea-proteins" name="textarea-proteins"></textarea>
+                                </div>
+                            </div>
+
+
+                            <div class="row row-spacer"></div>
+
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-check">
+                                        <label id="ee" class="form-check-label">
+                                            <input type="checkbox" id="exactMatch" class="form-check-input">
+                                            Exact match
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="float-right">
+                                        <button id="btnProteinSearch" class="btn btn-primary"><i class="fas fa-search"></i> Search</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-th"></i> Search Results</a>
+                        </div>
+
+                        <div class="card-body">
+                            <div id="searchResultsDiv">
+                                Please enter a search term.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="row row-spacer"></div>
+
+            <div class="row" id="mafOuterDiv">
+                <div class="col">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-barcode fa-rotate-90"></i> Alignment Viewer</a>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col col-auto">
+                                    <strong>Sort</strong>
+                                </div>
+                                <div class="col col-auto">
+                                    <ul class="list-inline">
+                                        <li class="list-inline-item">
+                                            <a id="btnSortLabelAsc" href="#"><i class="fas fa-sort-amount-up"></i> Label</a>
+                                        </li>
+                                        <li class="list-inline-item">
+                                            <a id="btnSortLabelDesc" href="#"><i class="fas fa-sort-amount-down"></i> Label</a>
+                                        </li>
+                                        <li class="list-inline-item">
+                                            <a id="btnSortSeqAsc" href="#"><i class="fas fa-sort-amount-up"></i> Sequence</a>
+                                        </li>
+                                        <li class="list-inline-item">
+                                            <a id="btnSortSeqDesc" href="#"><i class="fas fa-sort-amount-down"></i> Sequence</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="row">
+
+                                <div class="col-auto">
+                                    <strong>Search for substring</strong>
+                                </div>
+                                <div class="col-auto">
+
+
+                                    <div class="input-group">
+                                        <input type="text" id="txtPeptideHL" class="form-control form-control-sm"
+                                               placeholder="" aria-label="">
+                                        <span class="input-group-btn">
+                                            <button class="btn btn-sm btn-primary" id="btnPeptideHL" type="button"><i class="fab fa-searchengin"></i></button>
+                                            <button class="btn btn-sm btn-secondary" id="btnPeptideClear" type="button"><i class="fas fa-times-circle"></i></button>
+                                        </span>
+                                    </div>
+
+
+                                </div>
+                            </div>
+
+
+                            <div id="mafViewerDiv"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="row">
+                <div class="col-12">
+                    <div id="searchProgressDiv"></div>
+                </div>
+            </div>
+
+        <!--
+            <div class="row">
+                <div class="col-12">
+                    <table class="table table-striped table-small condensed">
+                        <thead>
+                        <tr>
+                            <th scope="col">Sequence</th>
+                            <th scope="col">Gene</th>
+                            <th scope="col">Symbol</th>
+                            <th scope="col">Protein</th>
+                            {% for strain in config.STRAINS %}
+                                <th class="text-center"><span class="border badge" style="background-color:{{strain.color}}">{{strain.key}}</span></th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                        <tbody id="tblBody">
+                        </tbody>
+                    </table>
+                </div>
+        //-->
+
+
+        </main>
+    </div>
+
+
+</div>
+
+    <!-- Main Footer
+    <nav class="navbar fixed-bottom navbar-dark bg-dark">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item">
+            <span class="text-muted">
+                <strong>Created by <a href="http://churchill-lab.jax.org">The Churchill Lab</a>.</strong>
+            </span>
+          </li>
+        </ul>
+    </nav>
+    //-->
+
+</body>
+{% endblock %}
+
+{% block javascript %}
+
+    <script src="//code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"
+            integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+            crossorigin="anonymous"></script>
+
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"
+            integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+            crossorigin="anonymous"></script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/4.4.5/js/fileinput.min.js"></script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.33.0/codemirror.js"></script>
+
+    <!-- D3 //-->
+    <script src="//d3js.org/d3.v3.min.js"></script>
+    <script src="//d3js.org/d3-queue.v3.min.js"></script>
+    <script src="//d3js.org/d3-request.v1.min.js"></script>
+
+    <!-- Extra //-->
+    <script src="{{ url_for('static', filename='vendor/CoreUI-v1.0.6/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/dynatables-0.3.1/jquery.dynatable.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap-hardskilled-extend-select-1.1.4/js/select.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap-switch-3.3.4/js/bootstrap-switch.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap-switch-3.3.4/js/bootstrap-switch.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/jquery-check-all-0.5.0/jquery-check-all.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/icheck-1.x/icheck.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/msa/msa.js') }}"></script>
+
+    <script>
+
+    // Extended disable function
+    jQuery.fn.extend({
+        disable: function(state) {
+            return this.each(function() {
+                let $this = $(this);
+                if($this.is('input, button, textarea, select'))
+                    this.disabled = state;
+                else
+                    $this.toggleClass('disabled', state);
+            });
+        }
+    });
+
+    /**
+     * Download data.
+     * @param {string} URL - the URL to download data
+     * @param {string} description - descriptive text
+     * @param {function} callback - the callback function
+     */
+    function downloadData(URL, description, callback) {
+        /*
+         From d3.js documentation:
+
+         When a task completes, it must call the provided callback.
+
+         The first argument to the callback should be null if the task is successful,
+         or the error if the task failed.
+
+         The optional second argument to the callback is the return value of the task.
+         (To return multiple values from a single callback, wrap the results in an object or array.)
+         */
+        console.log('Downloading: ', URL);
+
+        $.ajax({
+            url: URL,
+            method: 'GET'
+        }).done(function(data, textStatus, jqXHR) {
+            console.log(`Download of ${description}:`, data);
+            callback(null, data);
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            //displayError('Server Error', 'Unable to download ' + description);
+            console.error(description, textStatus);
+            callback(errorThrown, null);
+        });
+    }
+
+    var globals = {};
+
+
+
+    function displayProteins(data) {
+        $('#searchResultsDiv').html('');
+
+
+        if (data.result.length === 0) {
+            setStatus(true);
+            $('#geneSearchResultsStatus').html('No results found');
+            return;
+        }
+
+        let divResults = `
+            <div class="results-wrapper">
+                <table id="geneSearchResultsTable" class="table table-striped table-hover table-sm condensed">
+                <thead>
+                    <tr>
+                    <th scope="col">Sequence</th>
+                    <th scope="col">Gene</th>
+                    <th scope="col">Symbol</th>
+                    <th scope="col">Protein</th>
+                    {% for strain in config.STRAINS %}
+                        <th class="text-center"><span class="border badge" style="background-color:{{strain.color}}">{{strain.key}}</span></th>
+                    {% endfor %}
+                    </tr>
+                </thead>
+                <tbody id="geneTableBody"></tbody>
+                </table>
+            </div>`;
+
+        $('#searchResultsDiv').html(divResults);
+
+        let t = $('#geneTableBody');
+
+        $.each(data.result, function(seq_idx, seq_elem) {
+            console.log(seq_elem);
+
+            if (seq_elem.length === 0) {
+                let r = '<tr><td colspan="12">' + seq_idx + '</td></tr>';
+                t.append(r);
+            } else {
+
+                $.each(seq_elem, function (gene_idx, gene_elem) {
+                    console.log(gene_elem);
+
+                    $.each(gene_elem.proteins, function (protein_idx, protein_elem) {
+                        console.log(protein_elem)
+
+                        let r = '<tr><td>' + seq_idx + '</td>';
+                        r += ('<td>' + gene_elem.ensembl_id + '</td>');
+                        r += ('<td><a href="#" geneID="' + gene_elem.ensembl_id + '">' + gene_elem.symbol + '</a></td>');
+                        r += ('<td>' + protein_idx + '</td>');
+                        let count = 0;
+
+                        {% for strain in config.STRAINS %}
+                        if (protein_elem['{{strain.key}}'] > 0) {
+                            {% if strain.key != 'B' %}
+                            count++;
+                            {% endif %}
+                            r += '<td class="text-center" ><span class="border badge" style="background-color:{{strain.color}}">{{strain.key}}</span></td>';
+                        } else {
+                            r += '<td class="text-center"></td>';
+                        }
+                        {% endfor %}
+
+                        r += '</tr>';
+
+                        //if (count > 0) {
+                            t.append(r);
+                        //}
+
+
+                    });
+
+                });
+            }
+        });
+
+
+        $('#geneTableBody a').on('click', function(evt) {
+            evt.preventDefault();
+            let that = $(this);
+            generateMSAData(that.attr('geneid'));
+            return false;
+        });
+
+
+
+        setStatus(true);
+
+
+    }
+
+    function updateProteins(taskID) {
+        if (globals.runningTask) {
+            let statusURL = '{{ url_for('api.search_proteins_status', task_id='', _external=True) }}' + taskID;
+            $.ajax({
+                type: 'GET',
+                url: statusURL,
+                success: function (data, status, request) {
+                    console.log('DATA=======', data);
+                    if (data['status'] === 'DONE') {
+                        if ('error' in data) {
+                            // MAJOR ERROR
+                            let message = `Unfortunately, there was a problem contacting the server.  Please try again.`;
+                            stopTask();
+                            console.log('ERROR');
+                        } else {
+                                displayProteins(data);
+                                stopTask();
+                        }
+                    } else {
+                        // rerun in 1 seconds
+                        console.log('Not done, keep checking...');
+                        setTimeout(function () {
+                            updateProteins(taskID);
+                        }, 1000);  // TODO: change to 1000 (1 second)
+                    }
+                }
+            });
+        } else {
+        }
+
+    }
+
+
+    function findProteins() {
+        $('#searchResultsDiv').html('');
+        $('#mafViewerDiv').html('');
+        let searchVals = globals.txtProteins.getValue().split('\n');
+        let exactMatch = $("#exactMatch").is(":checked");
+
+        for (let s in searchVals) {
+            if (!exactMatch) {
+                searchVals[s] = "*" + searchVals[s].trim() + "*";
+            }
+        }
+
+        if (searchVals.length === 0) {
+            return;
+        }
+
+        setStatus(false);
+        startTask();
+
+        $.ajax({
+            type: 'POST',
+            url: '{{ url_for('api.search_proteins', _external=True) }}',
+            dataType: 'json',
+            data: JSON.stringify({
+                'sequences': searchVals
+            }),
+            contentType: 'application/json; charset=utf-8',
+            success: function (data) {
+                console.log('Returned Data:', data);
+                updateProteins(data.task_id);
+            },
+            error: function (jqXHR) {
+                console.log('Request failed');
+                alert('error');
+            }
+        });
+
+        //downloadProteins();
+    }
+
+    function setStatus(done) {
+
+        $('#btnGeneSearch').disable(!done);
+        $('#txtGeneSearch').disable(!done);
+
+        $('#btnProteinSearch').disable(!done);
+        if (done) {
+            $('#btnGeneSearch').html('<i class="fas fa-search"></i>');
+            $('#btnProteinSearch').html('<i class="fas fa-search"></i> Search');
+            globals.txtProteins.setOption('readOnly', false);
+        } else {
+            $('#btnGeneSearch').html('<i class="fa fa-cog fa-spin fa-fw"></i>');
+            $('#btnProteinSearch').html('<i class="fa fa-cog fa-spin fa-fw"></i> Search');
+            globals.txtProteins.setOption('readOnly', 'nocursor');
+
+        }
+    }
+
+       function updateMSAData(taskID, ensemblID) {
+            // send GET request to status URL
+            console.log('updateMSAData');
+            console.log(taskID);
+
+            if (globals.runningTask) {
+                let statusURL = '{{ url_for('api.clustalo_gene_status', task_id='', _external=True) }}' + taskID;
+                $.ajax({
+                    type: 'GET',
+                    url: statusURL,
+                    success: function (data, status, request) {
+                        console.log('DATA=======', data);
+                        if (data['status'] === 'DONE') {
+                            if ('error' in data) {
+                                // MAJOR ERROR
+                                let message = `Unfortunately, there was a problem contacting the server.  Please try again.`;
+                                stopTask();
+                                console.log('ERROR');
+                            } else {
+                                    displayMSAViewer(taskID, ensemblID);
+                                    stopTask();
+                            }
+                        } else {
+                            // rerun in 1 seconds
+                            console.log('Not done, keep checking...');
+                            setTimeout(function () {
+                                updateMSAData(taskID, ensemblID);
+                            }, 1000);  // TODO: change to 1000 (1 second)
+                        }
+                    }
+                });
+            } else {
+            }
+        }
+
+        function startTask() {
+        globals.runningTask = true;
+        }
+
+        function stopTask() {
+        globals.runningTask = false;
+        }
+
+    function generateMSAData(ensemblID) {
+
+        startTask();
+
+
+
+        $.ajax({
+            type: 'POST',
+            url: "{{ url_for('api.clustalo_gene', _external=True) }}",
+            data: {'ensemblID': ensemblID},
+            success: function(data, status, request) {
+                console.log('data=', data);
+                console.log('status=', status);
+                console.log('request=', request);
+                updateMSAData(data.task_id, ensemblID);
+            },
+            error: function(a, b, c) {
+                // TODO: handle
+                console.log(a,b,c);
+                alert('Unexpected error');
+            }
+        });
+
+    }
+
+    function displayMSAViewer(task_id, ensemblID) {
+
+        $('#mafViewerDiv').html('');
+
+        let h = `
+            <div class="row">
+                <div class="col-11">
+                    <div id="mafDIV"></div>
+                </div>
+            </div>
+
+            <div class="row row-spacer"></div>
+
+            <div class="row">
+                <div class="col">
+                    <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('api.streamed_fasta_response', _external=True) }}?ensemblID=${ensemblID}">Download Fasta Sequences</a>
+                </div>
+            </div>`;
+
+
+        $('#mafViewerDiv').html(h);
+
+        console.log('task_id=', task_id);
+            let opts = {};
+
+            // set your custom properties
+            // @see: https://github.com/wilzbach/biojs-vis-msa/tree/master/src/g
+            opts.el = document.getElementById("mafDIV");
+            opts.vis = {
+                sequences: true,
+                markers: true,
+                metacell: false,
+                conserv: false,
+                overviewbox: false, // box on bottom, default to true
+                seqlogo: false,
+                gapHeader: true,
+                leftHeader: true,
+
+                // about the labels
+                labels: true,
+                labelName: true,
+                labelId: false, // default is true
+                labelPartition: false,
+                labelCheckbox: false,
+
+                // meta stuff
+                metaGaps: true,
+                metaIdentity: true,
+                metaLinks: true
+            };
+            opts.conf = {
+                registerMouseHover: false,
+                registerMouseClicks: true,
+                importProxy: "http://", // default is "https://cors-anywhere.herokuapp.com/",
+                eventBus: true,
+                alphabetSize: 20,
+                dropImport: false,
+                debug: true,
+                hasRef: false, // hasReference,
+                manualRendering: false // manually control the render (not recommened)
+            };
+            opts.menu = {
+                menuFontsize: "14px",
+                menuItemFontsize: "14px",
+                menuItemLineHeight: "14px",
+                menuMarginLeft: "3px",
+                menuPadding: "3px 4px 3px 4px",
+            };
+
+
+
+            opts.zoomer = {
+                // general
+                alignmentWidth: "auto",
+                alignmentHeight: 225,
+                columnWidth: 15,
+                rowHeight: 15,
+                autoResize: true, // only for the width
+
+                // labels
+                textVisible: true,
+                labelIdLength: 30,
+                labelNameLength: 200, // 100
+                labelPartLength: 15,
+                labelCheckLength: 15,
+                labelFontsize: 13,
+                labelLineHeight: "13px",
+
+                // marker
+                markerFontsize: "10px",
+                stepSize: 1,
+                markerStepSize: 2,
+                markerHeight: 20,
+
+                // canvas
+                residueFont: "13", //in px
+                canvasEventScale: 1,
+
+                // overview box
+                boxRectHeight: 2,
+                boxRectWidth: 2,
+                overviewboxPaddingTop: 10,
+
+                // meta cell
+                metaGapWidth: 35,
+                metaIdentWidth: 40,
+                metaLinksWidth: 25
+
+            };
+
+            // init msa
+            globals.m = new msa(opts);
+
+            let url = '{{ url_for('api.clustalo_gene_data', _external=True) }}?task_id=' + task_id;
+            console.log('URL=', url);
+            globals.m.u.file.importURL(url, renderMSA);
+
+            function renderMSA() {
+
+                // the menu is independent to the MSA container
+                var menuOpts = {};
+                menuOpts.el = document.getElementById('div');
+                menuOpts.msa = globals.m;
+                //menuOpts.menu = "small";
+                //var defMenu = new msa.menu.defaultmenu(menuOpts);
+                //globals.m.addView("menu", defMenu);
+
+                // call render at the end to display the whole MSA
+                globals.m.render();
+            }
+    }
+
+
+
+    // Returns a function, that, as long as it continues to be invoked, will not
+    // be triggered. The function will be called after it stops being called for
+    // N milliseconds. If `immediate` is passed, trigger the function on the
+    // leading edge, instead of the trailing.
+    function debounce(func, wait, immediate) {
+        var timeout;
+        return function() {
+            var context = this, args = arguments;
+            var later = function() {
+                timeout = null;
+                if (!immediate) func.apply(context, args);
+            };
+            var callNow = immediate && !timeout;
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+            if (callNow) func.apply(context, args);
+        };
+    };
+
+    var myEfficientFn = debounce(function() {
+        if (globals.m != null) {
+            console.log('go');
+            globals.m.render();
+        }
+    }, 250);
+
+
+    /**
+     * Populate the search results.
+     */
+    function geneSearchCallback(error, data) {
+
+        $('#searchResultsDiv').html('');
+
+
+        if (data.length === 0) {
+            setStatus(true);
+            $('#geneSearchResultsStatus').html('No results found');
+            return;
+        }
+
+        let divResults = `
+            <div class="results-wrapper">
+                <table id="geneSearchResultsTable" class="table table-striped table-hover table-sm condensed">
+                <thead>
+                    <tr>
+                        <th class="d-none d-md-table-cell" scope="col">Gene</th>
+                        <th class="" scope="col">Symbol</th>
+                        {% for strain in config.STRAINS %}
+                            <th class="text-center"><span class="border badge" style="background-color:{{strain.color}}">{{strain.key}}</span></th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody id="geneTableBody"></tbody>
+                </table>
+            </div>`;
+
+        $('#searchResultsDiv').html(divResults);
+
+        let t = $('#geneTableBody');
+
+
+
+        $.each(data, function (gene_idx, gene_elem) {
+            //console.log(gene_elem);
+
+            let r = '<tr><td class="d-none d-md-table-cell">' + gene_elem.ensembl_id + '</td>';
+            r += ('<td><a href="#" geneID="' + gene_elem.ensembl_id + '">' + gene_elem.symbol + '</a></td>');
+
+
+            {% for strain in config.STRAINS %}
+                if ('{{strain.key}}' in gene_elem.strains) {
+                    r += ('<td class="text-center">' + gene_elem.strains['{{strain.key}}'].count + '</td>');
+                } else {
+                    r += ('<td class="text-center">0</td>')
+                }
+            {% endfor %}
+
+            r += '</tr>';
+
+            t.append(r);
+        });
+
+
+
+        $('#geneTableBody a').on('click', function(evt) {
+            evt.preventDefault();
+            let that = $(this);
+            generateMSAData(that.attr('geneid'));
+            return false;
+        });
+
+
+        setStatus(true);
+    }
+
+    function findGene(searchVal) {
+        let term = $('#txtGeneSearch');
+        $('#searchResultsDiv').html('');
+        $('#mafViewerDiv').html('');
+
+        if (searchVal.length === 0) {
+            term.focus();
+            return;
+        }
+
+        setStatus(false);
+        let url = `{{ url_for('api.search_genes', term='', _external=True) }}${searchVal}`;
+        downloadData(url, 'genes', geneSearchCallback);
+    }
+
+    $().ready(function () {
+        globals.txtProteins = CodeMirror.fromTextArea($('#textarea-proteins')[0], {
+            lineNumbers: true,
+            viewportMargin: 3
+        });
+        //globals.txtProteins.setValue('LSPPPFK?QVTDTR\nLSPP*VTSETDTR');
+
+        $('input').iCheck({
+            checkboxClass: 'icheckbox_square-blue',
+            radioClass: 'iradio_square-blue',
+            increaseArea: '20%' // optional
+        });
+
+
+        $('#txtGeneSearch').keypress(function(evt) {
+            let code = evt.which ? evt.which : evt.keyCode;
+            if (code === 13) {
+                $(this).blur();
+                $('#btnGeneSearch').focus().click();
+            }
+        });
+
+        $('#btnGeneSearch').button().on('click', function(evt) {
+            evt.preventDefault();
+            let term = $('#txtGeneSearch');
+            findGene(term.val().trim());
+            return false;
+        });
+
+        $('#btnProteinSearch').button().on('click', function (evt) {
+            evt.preventDefault();
+            console.log('findProteins');
+            findProteins();
+            return false;
+        });
+
+        window.addEventListener('resize', myEfficientFn);
+
+                //globals.m.g.user.set("searchText", "LLL");
+                //globals.m.g.user.set("searchText", null);
+
+                //globals.m.seqs.comparator = 'name';
+                //globals.m.seqs.comparator = function(a,b){ return - a.get("name").localeCompare(b.get("name"))};
+                //globals.m.seqs.comparator = 'seq';
+                //globals.m.seqs.comparator = function(a,b){ return - a.get("seq").localeCompare(b.get("seq"))};
+                //globals.m.seqs.sort();
+
+
+        $('#btnSortLabelAsc').button().on('click', function (evt) {
+            if (globals.m != null) {
+                globals.m.seqs.comparator = 'name';
+                globals.m.seqs.sort();
+            }
+        });
+
+        $('#btnSortLabelDesc').button().on('click', function (evt) {
+            if (globals.m != null) {
+                globals.m.seqs.comparator = function (a, b) {
+                    return -a.get("name").localeCompare(b.get("name"))
+                };
+                globals.m.seqs.sort();
+            }
+        });
+
+        $('#btnSortSeqAsc').button().on('click', function (evt) {
+            if (globals.m != null) {
+                globals.m.seqs.comparator = 'seq';
+                globals.m.seqs.sort();
+            }
+        });
+
+        $('#btnSortSeqDesc').button().on('click', function (evt) {
+            if (globals.m != null) {
+                globals.m.seqs.comparator = function (a, b) {
+                    return -a.get("seq").localeCompare(b.get("seq"))
+                };
+                globals.m.seqs.sort();
+            }
+        });
+
+        $('#btnPeptideHL').button().on('click', function (evt) {
+            if (globals.m != null) {
+                let val = $('#txtPeptideHL').val().trim();
+                globals.m.g.user.set("searchText", val);
+            }
+        });
+
+        $('#btnPeptideClear').button().on('click', function (evt) {
+            if (globals.m != null) {
+                $('#txtPeptideHL').val('');
+                globals.m.g.user.set("searchText", null);
+            }
+        });
+
+    });
+    //-->
+
+
+
+    </script>
+
+
+{% if not config.DEBUG %}
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-113547780-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-113547780-1');
+</script>
+{% endif %}
+
+
+{% endblock %}

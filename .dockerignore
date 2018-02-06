@@ -1,0 +1,7 @@
+.git
+.dockerignore
+#viewer.settings
+cache.sqlite
+data/
+data2/
+cc_proteins/static/vendor/msa/node_modules

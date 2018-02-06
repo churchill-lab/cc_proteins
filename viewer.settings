@@ -1,0 +1,28 @@
+###############################################################################
+#
+# DISPLAY CONFIGURATION (Overrides)
+#
+###############################################################################
+
+MAIN_TITLE = 'CC Proteins Viewer'
+
+
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+
+
+LOG_LEVEL = 'DEBUG' # CRITICAL / ERROR / WARNING / INFO / DEBUG
+
+STRAINS = [
+    {'key':'A', 'color':"#F0F000", 'name':"A/J", 'id': 'mus_musculus_aj'},
+    {'key':'B', 'color':"#808080", 'name':"C57BL/6J", 'id': 'mus_musculus'},
+    {'key':'C', 'color':"#F08080", 'name':"129S1/SvImJ", 'id': 'mus_musculus_129s1svimj'},
+    {'key':'D', 'color':"#1010F0", 'name':"NOD/ShiLtJ", 'id': 'mus_musculus_nodshiltj'},
+    {'key':'E', 'color':"#00A0F0", 'name':"NZO/H1LtJ", 'id': 'mus_musculus_nzohlltj'},
+    {'key':'F', 'color':"#00A000", 'name':"CAST/EiJ", 'id': 'mus_musculus_casteij'},
+    {'key':'G', 'color':"#F00000", 'name':"PWK/PhJ", 'id': 'mus_musculus_pwkphj'},
+    {'key':'H', 'color':"#9000E0", 'name':"WSB/EiJ", 'id': 'mus_musculus_wsbeij'}
+]
+
+
+FASTA_DB = '/app/cc_proteins/data/fasta.db3'

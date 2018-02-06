@@ -1,0 +1,270 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}{{ config.MAIN_TITLE|safe }}{% endblock %}
+{% block meta_description %}{% endblock %}
+{% block head %}
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/CoreUI-v1.0.6/style.css', _external=True) }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/CoreUI-v1.0.6/simple-line-icons-2.4.1.css', _external=True) }}">
+
+    <link rel="stylesheet"
+          href="//use.fontawesome.com/releases/v5.0.2/css/all.css">
+
+    <link rel="stylesheet"
+          href="//cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='vendor/bootstrap-hardskilled-extend-select-1.1.4/css/select.css', _external=True) }}">
+
+    <link rel="stylesheet"
+          href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/4.4.5/css/fileinput.min.css"/>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='styles/main.css', _external=True) }}">
+
+    <style>
+
+    </style>
+
+{% endblock %}
+
+{% block body %}
+
+    {% include 'page/nav.html' %}
+
+    <div class="container-fluid">
+        <main class="col-12" role="main">
+
+            <div class="row">
+                <div class="col">
+                    <h4>Web Service</h4>
+                    A RESTful web service interface is provided so that you can
+                    use the mouse map converter programmatically. In order
+                    to do this you need to send an HTTP POST to
+                    {{ url_for('api.api_convert', _external=True) }}.
+                    In the header of the post you should have &quot;Content-Type&quot;
+                    and &quot;Accept&quot; both set to &quot;application/json&quot;.
+                </div>
+            </div>
+
+            <div class="row row-spacer"></div>
+
+            <div class="row">
+                <div class="col">
+                    <h5>Input</h5>
+                </div>
+            </div>
+
+            <div class="row row-spacer"></div>
+
+            <div class="row">
+                <div class="col">
+                    The JSON object should be formatted as follows:
+                </div>
+            </div>
+
+            <div class="row row-spacer"></div>
+
+            <div class="row">
+                <div class="col px-4">
+                    <div class="row">
+                        <div class="col">
+                            <strong>includeErrors</strong> <span class="font-weight-light">(optional, defaults to <samp>True</samp>)</span>
+                            <br>
+                            If <samp>True</samp> than errors that occur for any individual entry will be included in the <samp>results</samp> section of the JSON response.
+                        </div>
+                    </div>
+
+                    <div class="row row-spacer"></div>
+
+                    <div class="row">
+                        <div class="col">
+                            <strong>includeExtra</strong> <span class="font-weight-light">(optional, defaults to <samp>True</samp>)</span>
+                            <br>
+                            If <samp>True</samp> than errors messages will be included in the <samp>extra</samp> section in the JSON response.
+                        </div>
+                    </div>
+
+                    <div class="row row-spacer"></div>
+
+                    <div class="row">
+                        <div class="col">
+                            <strong>includeInput</strong> <span class="font-weight-light">(optional, defaults to <samp>True</samp>)</span>
+                            <br>
+                            If <samp>True</samp> than the input is included in the output in the <samp>results</samp> section of the JSON response.
+                        </div>
+                    </div>
+
+                    <div class="row row-spacer"></div>
+
+                    <div class="row">
+                        <div class="col">
+                            <strong>fromUnit</strong> <span class="font-weight-light">(required)</span>
+                            <br>
+                            The unit to convert the data from.
+                            <br><br>
+                            This should be one of:
+                            <ul class="list-unstyled pl-4">
+                            {%- for d in config['CONVERSION_UNITS'] -%}
+                                <li><samp>{{ d['unit'] }}</samp> <span class="font-weight-light">({{ d['label'] }})</span></li>
+                            {%- endfor -%}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="row row-spacer"></div>
+
+                    <div class="row">
+                        <div class="col">
+                            <strong>toUnit</strong> <span class="font-weight-light">(required)</span>
+                            <br>
+                            The unit to convert data to.
+                            <br><br>
+                            This should be one of:
+                            <ul class="list-unstyled pl-4">
+                            {%- for d in config['CONVERSION_UNITS'] -%}
+                                <li><samp>{{ d['unit'] }}</samp> <span class="font-weight-light">({{ d['label'] }})</span></li>
+                            {%- endfor -%}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <strong>dataToConvert</strong> <span class="font-weight-light">(required)</span>
+                            <br>
+                            An array of coordinates or IDs to convert from <samp>fromUnit</samp> to <samp>toUnit</samp>.
+                            If <samp>fromUnit</samp> is <samp>genes</samp> or <samp>snps</samp> than all that is needed
+                            for input is an ID, otherwise a chromosome and position are expected.  Optionally, a second
+                            position can be included.
+                            <br><br>
+                            For example, if <samp>fromUnit</samp> is <samp>genes</samp> or <samp>snps</samp>:
+                            <pre><code>
+                                dataToConvert: ['rs123456', 'rs2323212', 'rs2133232']
+                            </code></pre>
+                            If <samp>fromUnit</samp> is NOT <samp>genes</samp> or <samp>snps</samp>:
+                            <pre><code>
+                                dataToConvert: [
+                                    ['1', 10000234],
+                                    ['2', 10320871 1032198],
+                                    ['X', 9176013],
+                                    ['10', 1223422]
+                                ]
+                            </code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row row-spacer"></div>
+
+            <div class="row">
+                <div class="col">
+                    <h5>Output</h5>
+                </div>
+            </div>
+
+            <div class="row row-spacer"></div>
+
+            <div class="row">
+                <div class="col">
+                    The JSON response will consist of data corresponding to the <samp>includeErrors</samp>,
+                    <samp>includeExtras</samp>, <samp>includeInput</samp>, and <samp>fromUnit</samp>.
+                    <br><br>
+                    The base response will include a <samp>results</samp> section. This section will be an array
+                    of the converted inputs. If <samp>includeInput</samp> is <samp>True</samp> the first
+                    members of the result array will be the input followed by the conversion results.  If
+                    <samp>includeError</samp> is <samp>True</samp> than the value will include values even
+                    if the data could not be converted.
+                    <br><br>
+                    If <samp>includeExtras</samp> is <samp>True</samp>, a section called <samp>extras</samp>
+                    will be in the JSON response which will include an array of arrays, with each array member
+                    being an array with the input elements followed by an error message of why this
+                    entry could not be converted.
+                </div>
+            </div>
+
+            <div class="row row-spacer"></div>
+
+            <div class="row">
+                <div class="col">
+                    <h4>Examples</h4>
+                </div>
+            </div>
+
+            <div class="row row-spacer"></div>
+
+            <div class="row">
+                <div class="col">
+                    <h5>Python</h5>
+                    Here is an example script written in python that shows how you
+                    can use this service to convert coordinates and check for
+                    error message in the result:
+
+                    <script src="https://gist.github.com/keithshep/6643021.js"></script>
+                </div>
+            </div>
+
+
+            <div class="row row-spacer"></div>
+
+            <div class="row">
+                <div class="col">
+                    <h5>curl</h5>
+                    Here is an example curl command that shows how you
+                    can use this service:
+                    <script src="https://gist.github.com/keithshep/6643021.js"></script>
+                </div>
+            </div>
+
+            {% include 'page/contact.html' %}
+
+        </main>
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+
+    <script src="//code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"
+            integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+            crossorigin="anonymous"></script>
+
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"
+            integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+            crossorigin="anonymous"></script>
+
+    <!-- ENSIMPL API -->
+    <script src="//churchill-lab.jax.org/ensimpl/api/js/ensimpl.js"></script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/4.4.5/js/fileinput.min.js"></script>
+
+
+    <!-- D3 //-->
+    <script src="//d3js.org/d3.v3.min.js"></script>
+    <script src="//d3js.org/d3-queue.v3.min.js"></script>
+    <script src="//d3js.org/d3-request.v1.min.js"></script>
+
+    <!-- Extra //-->
+    <script src="{{ url_for('static', filename='vendor/CoreUI-v1.0.6/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/dynatables-0.3.1/jquery.dynatable.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap-hardskilled-extend-select-1.1.4/js/select.min.js') }}"></script>
+
+
+    <script>
+
+    $().ready(function () {
+
+    });
+
+
+
+
+    </script>
+
+{% endblock %}
