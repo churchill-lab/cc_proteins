@@ -81,7 +81,6 @@ def search_proteins(database, sequence):
 
         for row in cursor.execute(sql_search, {'sequence': sequence}):
             ref_gene_id = row['ref_gene_id']
-            print(row)
 
             gene = results.get(ref_gene_id, {'ensembl_id': ref_gene_id,
                                              'symbol': row['gene_name'],
@@ -153,7 +152,6 @@ def search_genes(database, term):
 
         for row in cursor.execute(sql_search, {'term': search_term}):
             ref_gene_id = row['ref_gene_id']
-            print(row['ref_gene_id'], row['ref_protein_id'], row['protein_id'])
 
             gene = results.get(ref_gene_id, {'ensembl_id': ref_gene_id,
                                              'symbol': row['gene_name'],
@@ -182,8 +180,6 @@ def search_genes(database, term):
 
     except sqlite3.Error as e:
         raise ProteinException(e)
-
-    print('returning=', list(results.values()))
 
     return list(results.values())
 
@@ -267,8 +263,6 @@ def gene_fasta_yield(database, ensembl_id, protein_nums=None):
 
         if protein_nums is None:
             protein_nums = []
-
-        print(protein_nums)
 
         idx = 0
 
