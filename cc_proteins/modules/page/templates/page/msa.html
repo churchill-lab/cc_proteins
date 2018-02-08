@@ -1,6 +1,6 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %}{{ config.MAIN_TITLE|safe }}{% endblock %}
+{% block title %}Alignment Viewer {{ ensembl_id }}{% endblock %}
 {% block meta_description %}{% endblock %}
 {% block head %}
     <link rel="stylesheet"
@@ -36,23 +36,10 @@
     <link rel="stylesheet"
           href="{{ url_for('static', filename='styles/main.css', _external=True) }}">
 
+    <script src="{{ url_for('static', filename='vendor/msa/msa.js') }}"></script>
+
     <style>
-        .CodeMirror {
-            border: 1px solid #ddd;
-            font-family: "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-            height: 100px;
-        }
-
-        .results-wrapper {
-            overflow-y: scroll;
-            height: 200px;
-        }
-
-        .tab-content {
-            border: none
-        }
-
-        .biojs_msa_header {
+        .biojs_msa_headers {
             white-space: nowrap;
             text-align: center;
         }
@@ -60,28 +47,125 @@
         .biojs_msa_labels {
             white-space: nowrap;
             text-align: right;
+            padding-right: 10px;
         }
+
+        body {
+            margin-bottom: 1px;
+            padding-top: 1rem;
+        }
+
     </style>
 
 {% endblock %}
 
 {% block body %}
 
-<body>
+<body class="None">
+<div class="inner">
+
     <div class="container-fluid">
+        <main class="col" role="main">
 
-        <div class="row">
-            <div class="col-10">
-                <div id="mafViewer"></div>
+            <div class="row" id="mafLoadingDiv">
+                <div class="col">
+                    <h3><i class="fas fa-cog fa-spin"></i> Generating data...</h3>
+                </div>
             </div>
-        </div>
 
 
+
+            <div class="row invisible" id="mafOuterDiv">
+                <div class="col">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-barcode fa-rotate-90"></i> Alignment Viewer</a>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col col-auto">
+                                    <strong>Sort</strong>
+                                </div>
+                                <div class="col col-auto">
+                                    <ul class="list-inline">
+                                        <li class="list-inline-item">
+                                            <a id="btnSortLabelAsc" href="#"><i class="fas fa-sort-amount-up"></i> Label</a>
+                                        </li>
+                                        <li class="list-inline-item">
+                                            <a id="btnSortLabelDesc" href="#"><i class="fas fa-sort-amount-down"></i> Label</a>
+                                        </li>
+                                        <li class="list-inline-item">
+                                            <a id="btnSortSeqAsc" href="#"><i class="fas fa-sort-amount-up"></i> Sequence</a>
+                                        </li>
+                                        <li class="list-inline-item">
+                                            <a id="btnSortSeqDesc" href="#"><i class="fas fa-sort-amount-down"></i> Sequence</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-auto">
+                                    <strong>Selection</strong>
+                                </div>
+                                <div class="col-auto">
+                                    <ul class="list-inline">
+                                        <li class="list-inline-item">
+                                            <a id="btnSelectAll" href="#"><i class="far fa-check-square"></i></i> All</a>
+                                        </li>
+                                        <li class="list-inline-item">
+                                            <a id="btnSelectNone" href="#"><i class="far fa-square"></i></i> None</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-auto">
+                                    <strong>Search for substring</strong>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="input-group">
+                                        <input type="text" id="txtPeptideHL" class="form-control form-control-sm"
+                                               placeholder="" aria-label="">
+                                        <span class="input-group-btn">
+                                            <button class="btn btn-sm btn-primary" id="btnPeptideHL" type="button"><i class="fab fa-searchengin"></i> Search</button>
+                                            <button class="btn btn-sm btn-secondary" id="btnPeptideClear" type="button"><i class="fas fa-times-circle"></i> Clear</button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row row-spacer"></div>
+
+                            <div class="row">
+                                <div class="col-auto">
+                                    <a id="btnDownload" class="btn btn-primary btn-sm float-right" role="button" href="#">Download Selected Fasta Sequences</a>
+                                </div>
+                                <div class="col-auto">
+                                    <span id="dlStatus" class="text-danger"></span>
+                                </div>
+                            </div>
+
+
+                            <div id="mafViewerDiv">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
     </div>
+
+    <form name="dlForm" id="dlForm" method="POST" action="{{ url_for('api.streamed_fasta_response', _external=True) }}">
+        <input type="hidden" id="ensemblID" name="ensemblID" value="{{ ensembl_id }}"/>
+        <input type="hidden" id="proteinNumbers" name="proteinNumbers" value=""/>
+    </form>
 
 
 </div>
-
 
 </body>
 {% endblock %}
@@ -117,9 +201,10 @@
     <script src="{{ url_for('static', filename='vendor/bootstrap-switch-3.3.4/js/bootstrap-switch.min.js') }}"></script>
     <script src="{{ url_for('static', filename='vendor/jquery-check-all-0.5.0/jquery-check-all.js') }}"></script>
     <script src="{{ url_for('static', filename='vendor/icheck-1.x/icheck.js') }}"></script>
-    <script src="{{ url_for('static', filename='vendor/msa/dist/msa.js') }}"></script>
 
     <script>
+
+    var globals = {};
 
     // Extended disable function
     jQuery.fn.extend({
@@ -134,193 +219,16 @@
         }
     });
 
-    /**
-     * Download data.
-     * @param {string} URL - the URL to download data
-     * @param {string} description - descriptive text
-     * @param {function} callback - the callback function
-     */
-    function downloadData(URL, description, callback) {
-        /*
-         From d3.js documentation:
-
-         When a task completes, it must call the provided callback.
-
-         The first argument to the callback should be null if the task is successful,
-         or the error if the task failed.
-
-         The optional second argument to the callback is the return value of the task.
-         (To return multiple values from a single callback, wrap the results in an object or array.)
-         */
-        console.log('Downloading: ', URL);
-
-        $.ajax({
-            url: URL,
-            method: 'GET'
-        }).done(function(data, textStatus, jqXHR) {
-            console.log(`Download of ${description}:`, data);
-            callback(null, data);
-        }).fail(function(jqXHR, textStatus, errorThrown) {
-            //displayError('Server Error', 'Unable to download ' + description);
-            console.error(description, textStatus);
-            callback(errorThrown, null);
-        });
-    }
-
-    var globals = {};
-
     function setStatus(done) {
-        $('#textarea-to').disable(!done);
-        $('#convert-to').disable(!done);
-
-        $('#input-id').parent().disable(!done);
-        $('#btnConvert').disable(!done);
-        $('#btnDownload').disable(!done);
-
-        $('.select-extended-element .btn').disable(!done);
-
-        if (done) {
-            globals.inputFrom.setOption('readOnly', false);
-            $('#btnConvert').html('Convert <i class="fas fa-exchange-alt">');
-        } else {
-            globals.inputFrom.setOption('readOnly', 'nocursor');
-            $('#btnConvert').html('Convert <i class="fa fa-cog fa-spin fa-fw"></i>');
-            $('#conversionStatus').html('Performing conversion...');
-            $('#conversionErrors').html('');
-        }
     }
 
-    function downloadProteins() {
-        let searchVals = $("#searchTerm").val().trim().split('\n');
-        let exactMatch = $("#exactMatch").is(":checked");
-
-        for (let s in searchVals) {
-            if (!exactMatch) {
-                searchVals[s] = "*" + searchVals[s].trim() + "*"
-            }
-        }
-
-     // send ajax POST request to start background job
-        console.log(searchVals);
-        $.ajax({
-            type: 'POST',
-            url: `{{ url_for('api.search', _external=True) }}`,
-            contentType: 'application/json',
-            data: JSON.stringify({'sequences': searchVals}),
-            success: function(data, status, request) {
-                let status_url = request.getResponseHeader('Location');
-                console.log('status_url=', status_url);
-            },
-            error: function() {
-                alert('Unexpected error');
-            }
-        });
-    }
-
-
-    function displayProteins(result) {
-        //console.log('displaying', result);
-        let t = $('#tblBody');
-        $.each(result, function(seq_idx, seq_elem) {
-            //console.log(seq_elem);
-
-            if (seq_elem.length == 0) {
-                let r = '<tr><td colspan="12">' + seq_idx + '</td></tr>';
-                t.append(r);
-            } else {
-
-                $.each(seq_elem, function (gene_idx, gene_elem) {
-                    //console.log(gene_elem);
-
-                    $.each(gene_elem.proteins, function (protein_idx, protein_elem) {
-                        //console.log(protein_elem)
-
-                        let r = '<tr><td>' + seq_idx + '</td>';
-                        r += ('<td>' + gene_elem.ensembl_id + '</td>');
-                        r += ('<td>' + gene_elem.symbol + '</td>');
-                        r += ('<td>' + protein_idx + '</td>');
-                        let count = 0;
-
-                        {% for strain in config.STRAINS %}
-                        if (protein_elem['{{strain.key}}'] > 0) {
-                            {% if strain.key != 'B' %}
-                            count++;
-                            {% endif %}
-                            r += '<td class="text-center" ><span class="border badge" style="background-color:{{strain.color}}">{{strain.key}}</span></td>';
-                        } else {
-                            r += '<td class="text-center"></td>';
-                        }
-                        {% endfor %}
-
-                        r += '</tr>';
-
-                        if (count > 0) {
-                            t.append(r);
-                        }
-
-
-                    });
-
-                });
-            }
-        });
-
-
-
-        $("#searchProgressDiv").removeClass("visible");
-        $("#searchProgressDiv").addClass("invisible");
-        $("#searchProgress").css("width", "0%");
-        $("#btnGo").attr("running", "0");
-        $("#btnGo").button().removeClass("disabled");
-
-    }
-
-
-
-    function findProteins() {
-        let searchVal = $("#searchTerm").val().trim().toUpperCase();
-
-        let running = $("#btnGo").attr("running");
-        $("#searchProgressDiv").removeClass("invisible");
-        $("#searchProgressDiv").addClass("visible");
-        $("#searchProgress").css("width", "0%");
-
-        if (running === "1") {
-            console.log('preventing click...');
-            return;
-        }
-
-        $("#btnGo").attr("running", "1");
-        $("#btnGo").button().addClass("disabled");
-
-        $("#tblBody").html('');
-
-        if (searchVal.length === 0) {
-            return;
-        }
-
-        downloadProteins();
-    }
-
-    function setStatus(done) {
-
-        $('#btnGeneSearch').disable(!done);
-        $('#txtGeneSearch').disable(!done);
-
-        if (done) {
-            $('#btnGeneSearch').html('<i class="fas fa-search">');
-        } else {
-            $('#btnGeneSearch').html('<i class="fa fa-cog fa-spin fa-fw"></i>');
-        }
-    }
-
-       function updateMSAData(taskID) {
+       function updateMSAData(taskID, ensemblID) {
             // send GET request to status URL
             console.log('updateMSAData');
             console.log(taskID);
 
             if (globals.runningTask) {
-                let statusURL = '{{ url_for('api.clustalo_status', task_id='', _external=True) }}' + taskID;
+                let statusURL = '{{ url_for('api.clustalo_gene_status', task_id='', _external=True) }}' + taskID;
                 $.ajax({
                     type: 'GET',
                     url: statusURL,
@@ -333,14 +241,14 @@
                                 stopTask();
                                 console.log('ERROR');
                             } else {
-                                    displayMSAViewer(taskID);
+                                    displayMSAViewer(taskID, ensemblID);
                                     stopTask();
                             }
                         } else {
                             // rerun in 1 seconds
                             console.log('Not done, keep checking...');
                             setTimeout(function () {
-                                updateMSAData(taskID);
+                                updateMSAData(taskID, ensemblID);
                             }, 1000);  // TODO: change to 1000 (1 second)
                         }
                     }
@@ -358,10 +266,9 @@
         }
 
     function generateMSAData(ensemblID) {
+        let url = `{{ url_for('page.msa', _external=True) }}?ensemblID=${ensemblID}`;
 
         startTask();
-
-
 
         $.ajax({
             type: 'POST',
@@ -371,7 +278,7 @@
                 console.log('data=', data);
                 console.log('status=', status);
                 console.log('request=', request);
-                updateMSAData(data.task_id);
+                updateMSAData(data.task_id, ensemblID);
             },
             error: function(a, b, c) {
                 // TODO: handle
@@ -382,313 +289,251 @@
 
     }
 
-    function displayMSAViewer(task_id) {
+    function displayMSAViewer(task_id, ensemblID) {
+
+        $('#mafViewerDiv').html('');
+        $('#mafOuterDiv').removeClass('invisible');
+        $('#mafOuterDiv').addClass('visible');
+        $('#mafLoadingDiv').removeClass('visible');
+        $('#mafLoadingDiv').addClass('invisible');
+        $('#mafLoadingDiv').html('');
+
         let h = `
-            <div class="row" id="generatedMAFDIV">
-                <div class="col">
-                    <div class="card">
-                        <div class="card-header">
-                            <i class="fas fa-chart-line"></i> Viewer</a>
-                        </div>
-                        <div class="card-body">
-                            <div id="mafDIV"></div>
-                        </div>
-                    </div>
+            <div class="row">
+                <div class="col-11">
+                    <div id="mafDIV"></div>
                 </div>
             </div>`;
 
 
-        $('#mafSpacer').after(h);
+        $('#mafViewerDiv').html(h);
 
         console.log('task_id=', task_id);
-		        let opts = {};
+            let opts = {};
 
-		        // set your custom properties
-		        // @see: https://github.com/wilzbach/biojs-vis-msa/tree/master/src/g
-		        opts.el = document.getElementById("mafDIV");
-		        opts.vis = {
-					sequences: true,
-					markers: true,
-					metacell: false,
-					conserv: false,
-					overviewbox: true,
-					seqlogo: false,
-					gapHeader: true,
-					leftHeader: true,
+            // set your custom properties
+            // @see: https://github.com/wilzbach/biojs-vis-msa/tree/master/src/g
+            opts.el = document.getElementById("mafDIV");
+            opts.vis = {
+                sequences: true,
+                markers: true,
+                metacell: false,
+                conserv: false,
+                overviewbox: false, // box on bottom, default to true
+                seqlogo: false,
+                gapHeader: true,
+                leftHeader: true,
 
-					// about the labels
-					labels: true,
-					labelName: true,
-					labelId: false, // default is true
-					labelPartition: false,
-					labelCheckbox: false,
+                // about the labels
+                labels: true,
+                labelName: true,
+                labelId: false, // default is true
+                labelPartition: false,
+                labelCheckbox: true,
 
-					// meta stuff
-					metaGaps: true,
-					metaIdentity: true,
-					metaLinks: true
-		        };
-		        opts.conf = {
-					registerMouseHover: false,
-					registerMouseClicks: true,
-					importProxy: "http://", // default is "https://cors-anywhere.herokuapp.com/",
-					eventBus: true,
-					alphabetSize: 20,
-					dropImport: false,
-					debug: true,
-					hasRef: false, // hasReference,
-					manualRendering: false // manually control the render (not recommened)
-				};
-				opts.menu = {
-					menuFontsize: "14px",
-					menuItemFontsize: "14px",
-					menuItemLineHeight: "14px",
-					menuMarginLeft: "3px",
-					menuPadding: "3px 4px 3px 4px",
-				};
-
-
-
-		        opts.zoomer = {
-					// general
-					alignmentWidth: "auto",
-					alignmentHeight: 225,
-					columnWidth: 15,
-					rowHeight: 15,
-					autoResize: true, // only for the width
-
-					// labels
-					textVisible: true,
-					labelIdLength: 30,
-					labelNameLength: 200, // 100
-					labelPartLength: 15,
-					labelCheckLength: 15,
-					labelFontsize: 13,
-					labelLineHeight: "13px",
-
-					// marker
-					markerFontsize: "10px",
-					stepSize: 1,
-					markerStepSize: 2,
-					markerHeight: 20,
-
-					// canvas
-					residueFont: "13", //in px
-					canvasEventScale: 1,
-
-					// overview box
-					boxRectHeight: 2,
-					boxRectWidth: 2,
-					overviewboxPaddingTop: 10,
-
-					// meta cell
-					metaGapWidth: 35,
-					metaIdentWidth: 40,
-					metaLinksWidth: 25
-
-		        };
-
-		        // init msa
-		        var m = new msa(opts);
-
-				let url = '{{ url_for('api.clustalo_data', _external=True) }}?task_id=' + task_id;
-				console.log('URL=', url);
-		        m.u.file.importURL(url, renderMSA);
-
-		        function renderMSA() {
-
-		            // the menu is independent to the MSA container
-		            var menuOpts = {};
-		            menuOpts.el = document.getElementById('div');
-		            menuOpts.msa = m;
-		            //menuOpts.menu = "small";
-		            var defMenu = new msa.menu.defaultmenu(menuOpts);
-		            m.addView("menu", defMenu);
-
-		            // call render at the end to display the whole MSA
-		            m.render();
+                // meta stuff
+                metaGaps: true,
+                metaIdentity: true,
+                metaLinks: true
+            };
+            opts.conf = {
+                registerMouseHover: false,
+                registerMouseClicks: true,
+                importProxy: "http://", // default is "https://cors-anywhere.herokuapp.com/",
+                eventBus: true,
+                alphabetSize: 20,
+                dropImport: false,
+                debug: true,
+                hasRef: false, // hasReference,
+                manualRendering: false // manually control the render (not recommened)
+            };
+            opts.menu = {
+                menuFontsize: "14px",
+                menuItemFontsize: "14px",
+                menuItemLineHeight: "14px",
+                menuMarginLeft: "3px",
+                menuPadding: "3px 4px 3px 4px",
+            };
 
 
-		        }
 
+            opts.zoomer = {
+                // general
+                alignmentWidth: "auto",
+                alignmentHeight: 1225,
+                columnWidth: 15,
+                rowHeight: 15,
+                autoResize: true, // only for the width
 
-    }
+                // labels
+                textVisible: true,
+                labelIdLength: 30,
+                labelNameLength: 200, // 100
+                labelPartLength: 15,
+                labelCheckLength: 15,
+                labelFontsize: 13,
+                labelLineHeight: "13px",
 
-    /**
-     * Populate the search results.
-     */
-    function geneSearchCallback(error, data) {
-        if (data.length === 0) {
-            setStatus(true);
-            $('#geneSearchResultsStatus').html('No results found');
-            return;
-        }
+                // marker
+                markerFontsize: "10px",
+                stepSize: 1,
+                markerStepSize: 2,
+                markerHeight: 20,
 
-        let divResults = `
-            <div class="row" id="generatedSearchResultsDIV">
-                <div class="col">
-                    <div class="card">
-                        <div class="card-header">
-                            <i class="fas fa-chart-line"></i> Search Results</a>
-                        </div>
-                        <div class="card-body">
-                            <div class="results-wrapper">
-                                <table id="geneSearchResultsTable" class="table table-striped table-hover table-sm table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th class="" scope="col">Gene</th>
-                                        <th class="" scope="col">Symbol</th>
-                                        {% for strain in config.STRAINS %}
-                                            <th class="text-center"><span class="border badge" style="background-color:{{strain.color}}">{{strain.key}}</span></th>
-                                        {% endfor %}
-                                    </tr>
-                                </thead>
-                                <tbody id="geneTableBody"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
+                // canvas
+                residueFont: "13", //in px
+                canvasEventScale: 1,
 
+                // overview box
+                boxRectHeight: 2,
+                boxRectWidth: 2,
+                overviewboxPaddingTop: 10,
 
-        $('#searchSpacer').after(divResults);
+                // meta cell
+                metaGapWidth: 35,
+                metaIdentWidth: 40,
+                metaLinksWidth: 25
 
-        let t = $('#geneTableBody');
+            };
 
+            // init msa
+            globals.m = new msa(opts);
 
-        /*
-        $.each(data, function(seq_idx, seq_elem) {
-            console.log(seq_elem);
+            let url = '{{ url_for('api.clustalo_gene_data', _external=True) }}?task_id=' + task_id;
+            console.log('URL=', url);
+            globals.m.u.file.importURL(url, renderMSA);
 
-            if (seq_elem.length == 0) {
-                let r = '<tr><td colspan="12">' + seq_idx + '</td></tr>';
-                t.append(r);
-            } else {
+            function renderMSA() {
 
-                $.each(seq_elem, function (gene_idx, gene_elem) {
-                    //console.log(gene_elem);
+                // the menu is independent to the MSA container
+                var menuOpts = {};
+                menuOpts.el = document.getElementById('div');
+                menuOpts.msa = globals.m;
+                //menuOpts.menu = "small";
+                //var defMenu = new msa.menu.defaultmenu(menuOpts);
+                //globals.m.addView("menu", defMenu);
 
-                    $.each(gene_elem.proteins, function (protein_idx, protein_elem) {
-                        //console.log(protein_elem)
-
-                        let r = '<tr><td>' + seq_idx + '</td>';
-                        r += ('<td>' + gene_elem.ensembl_id + '</td>');
-                        r += ('<td>' + gene_elem.symbol + '</td>');
-                        r += ('<td>' + protein_idx + '</td>');
-                        let count = 0;
-
-                        {% for strain in config.STRAINS %}
-                        if (protein_elem['{{strain.key}}'] > 0) {
-                            {% if strain.key != 'B' %}
-                            count++;
-                            {% endif %}
-                            r += '<td class="text-center" ><span class="border badge" style="background-color:{{strain.color}}">{{strain.key}}</span></td>';
-                        } else {
-                            r += '<td class="text-center"></td>';
-                        }
-                        {% endfor %}
-
-                        r += '</tr>';
-
-                        if (count > 0) {
-                            t.append(r);
-                        }
-
-
-                    });
-
-                });
+                // call render at the end to display the whole MSA
+                globals.m.render();
             }
-        });
-
-        */
-
-
-
-
-        $.each(data, function (gene_idx, gene_elem) {
-            //console.log(gene_elem);
-
-            let r = '<tr><td><a href="#" geneID="' + gene_elem.ensembl_id + '">' + gene_elem.ensembl_id + '</a></td>';
-            r += ('<td>' + gene_elem.symbol + '</td>');
-
-
-            {% for strain in config.STRAINS %}
-                if ('{{strain.key}}' in gene_elem.strains) {
-                    r += ('<td class="text-center">' + gene_elem.strains['{{strain.key}}'].count + '</td>');
-                } else {
-                    r += ('<td class="text-center">0</td>')
-                }
-            {% endfor %}
-
-            r += '</tr>';
-
-            t.append(r);
-        });
-
-
-
-        $('#geneTableBody a').on('click', function(evt) {
-            evt.preventDefault();
-            let that = $(this);
-            generateMSAData(that.attr('geneid'));
-            return false;
-        });
-
-
-        setStatus(true);
     }
 
-    function findGene(searchVal) {
-        let term = $('#txtGeneSearch');
 
-        if (searchVal.length === 0) {
-            term.focus();
-            return;
+
+    // Returns a function, that, as long as it continues to be invoked, will not
+    // be triggered. The function will be called after it stops being called for
+    // N milliseconds. If `immediate` is passed, trigger the function on the
+    // leading edge, instead of the trailing.
+    function debounce(func, wait, immediate) {
+        var timeout;
+        return function() {
+            var context = this, args = arguments;
+            var later = function() {
+                timeout = null;
+                if (!immediate) func.apply(context, args);
+            };
+            var callNow = immediate && !timeout;
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+            if (callNow) func.apply(context, args);
+        };
+    };
+
+    var myEfficientFn = debounce(function() {
+        if (globals.m != null) {
+            console.log('go');
+            globals.m.render();
         }
+    }, 250);
 
-        setStatus(false);
-        let url = `{{ url_for('api.gene', gene_id='', _external=True) }}${searchVal}`;
-        downloadData(url, 'genes', geneSearchCallback);
-    }
+
 
     $().ready(function () {
-        globals.searchTerms = CodeMirror.fromTextArea($('#textarea-proteins')[0], {
-            lineNumbers: true,
-            viewportMargin: 3
-        });
 
-        $('input').iCheck({
-            checkboxClass: 'icheckbox_square-blue',
-            radioClass: 'iradio_square-blue',
-            increaseArea: '20%' // optional
-        });
+        window.addEventListener('resize', myEfficientFn);
 
-
-        $('#txtGeneSearch').keypress(function(evt) {
-            let code = evt.which ? evt.which : evt.keyCode;
-            if (code === 13) {
-                $(this).blur();
-                $('#btnGeneSearch').focus().click();
+        $('#btnSortLabelAsc').button().on('click', function (evt) {
+            if (globals.m != null) {
+                globals.m.seqs.comparator = 'name';
+                globals.m.seqs.sort();
             }
         });
 
-        $('#btnGeneSearch').button().on('click', function(evt) {
-            evt.preventDefault();
-            let term = $('#txtGeneSearch');
-            findGene(term.val().trim());
-            return false;
+        $('#btnSortLabelDesc').button().on('click', function (evt) {
+            if (globals.m != null) {
+                globals.m.seqs.comparator = function (a, b) {
+                    return -a.get("name").localeCompare(b.get("name"))
+                };
+                globals.m.seqs.sort();
+            }
         });
 
-        $('#btnGo').button().on('click', function (evt) {
-            evt.preventDefault();
-            console.log('findProteins');
-            findProteins();
-            return false;
+        $('#btnSortSeqAsc').button().on('click', function (evt) {
+            if (globals.m != null) {
+                globals.m.seqs.comparator = 'seq';
+                globals.m.seqs.sort();
+            }
         });
+
+        $('#btnSortSeqDesc').button().on('click', function (evt) {
+            if (globals.m != null) {
+                globals.m.seqs.comparator = function (a, b) {
+                    return -a.get("seq").localeCompare(b.get("seq"))
+                };
+                globals.m.seqs.sort();
+            }
+        });
+
+        $('#btnPeptideHL').button().on('click', function (evt) {
+            if (globals.m != null) {
+                let val = $('#txtPeptideHL').val().trim();
+                globals.m.g.user.set("searchText", val);
+            }
+        });
+
+        $('#btnPeptideClear').button().on('click', function (evt) {
+            if (globals.m != null) {
+                $('#txtPeptideHL').val('');
+                globals.m.g.user.set("searchText", null);
+            }
+        });
+
+        $('#btnSelectAll').button().on('click', function (evt) {
+            $('input:checkbox').prop('checked', true);
+        });
+
+        $('#btnSelectNone').button().on('click', function (evt) {
+            $('input:checkbox').prop('checked', false);
+        });
+
+        $('#btnDownload').button().on('click', function (evt) {
+            $('#proteinNumbers').val("");
+            $("#dlStatus").html('');
+
+            let checked = $('input:checked');
+
+            if (checked.length === 0) {
+                $("#dlStatus").html('Please select at least one protein to download.');
+                return;
+            }
+
+            let proteinNumbers = [];
+
+            $.each(checked, function(idx, elem) {
+                proteinNumbers.push($(elem).val());
+            });
+
+            $('#proteinNumbers').val(proteinNumbers.join(","));
+
+            $("#dlForm").submit();
+        });
+
+        console.log('generating data for {{ ensembl_id }}');
+        generateMSAData('{{ ensembl_id }}');
     });
     //-->
+
+
 
     </script>
 

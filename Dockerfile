@@ -20,4 +20,4 @@ RUN pip install --editable .
 RUN cp /app/cc_proteins/ext/clustalo-1.2.4-Ubuntu-x86_64 /usr/bin/clustalo-1.2.4 && \
     ln -s /usr/bin/clustalo-1.2.4 /usr/bin/clustalo
 
-CMD gunicorn -c "python:config.gunicorn" "mmc.app:create_app()"
+CMD gunicorn -c "python:config.gunicorn" --reload "mmc.app:create_app()"

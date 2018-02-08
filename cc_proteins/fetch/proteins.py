@@ -228,7 +228,7 @@ import time
 
 
 
-def gene_fasta_yield(database, ensembl_id):
+def gene_fasta_yield(database, ensembl_id, protein_nums=None):
     """Search for proteins by gene.
 
     Args:
@@ -265,14 +265,22 @@ def gene_fasta_yield(database, ensembl_id):
         crc = zlib.crc32(b"")
         length = 0
 
+        if protein_nums is None:
+            protein_nums = []
+
+        print(protein_nums)
+
+        idx = 0
 
         for row in cursor.execute(sql_search, {'ensembl_id': ensembl_id}):
-            data = '>{}\n{}\n'.format(row['protein_id'], row['seq']).encode()
-            chunk = compressor.compress(data)
-            if chunk:
-                yield chunk
-            crc = zlib.crc32(data, crc) & 0xffffffff
-            length += len(data)
+            if idx in protein_nums:
+                data = '>{}\n{}\n'.format(row['protein_id'], row['seq']).encode()
+                chunk = compressor.compress(data)
+                if chunk:
+                    yield chunk
+                crc = zlib.crc32(data, crc) & 0xffffffff
+                length += len(data)
+            idx += 1
 
         # Finishing off, send remainder of the compressed data, and CRC and length
         yield compressor.flush()

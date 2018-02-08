@@ -8,7 +8,7 @@ PORT = 9000
 THREADED = True
 
 # to debug or not debug, that is the question
-DEBUG = False
+DEBUG = True
 
 # secret key, probably just leave alone
 SECRET_KEY = 'CC_PROTEINS'

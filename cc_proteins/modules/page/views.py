@@ -62,6 +62,18 @@ def index():
     return render_template('page/index.html')
 
 
+@page.route('/msa')
+def msa():
+    print('CALL to /')
+    # POST search_term = request.form.get("search_term")
+    # GET  search_term = request.args.get("search_term")
+    # BOTH search_term = request.values.get("search_term")
+
+    ensembl_id = request.values.get("ensemblID")
+
+    return render_template('page/msa.html', ensembl_id=ensembl_id)
+
+
 @page.route('/help/web_service')
 def web_service():
     return render_template('page/web_service.html')

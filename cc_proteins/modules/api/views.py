@@ -192,9 +192,14 @@ def clustalo_gene_data():
         return 'Error: '  + str(e)
 
 
-@api.route("/gene/fasta", methods=['GET'])
+@api.route("/gene/fasta", methods=['POST'])
 def streamed_fasta_response():
     ensembl_id = request.values.get('ensemblID', '')
-    response = Response(stream_with_context(proteins.gene_fasta_yield(current_app.config['FASTA_DB'], ensembl_id)), mimetype='application/gzip')
+    protein_numbers = request.values.get('proteinNumbers', '')
+    print('protein_numbers=', protein_numbers)
+    nums = protein_numbers.split(',')
+    print(nums)
+    nums = list(map(int, nums))
+    response = Response(stream_with_context(proteins.gene_fasta_yield(current_app.config['FASTA_DB'], ensembl_id, nums)), mimetype='application/gzip')
     response.headers['Content-Disposition'] = 'attachment; filename={}.fasta.gz'.format(ensembl_id)
     return response

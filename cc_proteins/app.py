@@ -6,15 +6,12 @@ from flask import Flask
 from flask import render_template
 from flask import url_for
 
-from flask_cors import CORS
-
 from celery import Celery
 
 from cc_proteins.modules.api.views import api
 from cc_proteins.modules.page.views import page
-from cc_proteins.extensions import debug_toolbar
+#from cc_proteins.extensions import debug_toolbar
 from cc_proteins.utils import ReverseProxied
-
 
 CELERY_TASK_LIST = [
     'cc_proteins.modules.api.tasks',
@@ -82,8 +79,6 @@ def create_app(settings_override=None):
 
     extensions(app)
     error_templates(app)
-
-    CORS(app)
 
     return app
 
